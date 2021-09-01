@@ -66,18 +66,19 @@ class Cram {
     }
 
     loadCraiFile() {
-        if (typeof self.index !== 'undefined') {
+        if (typeof this.index !== 'undefined') {
             return;
         }
-        self.index = [];
-        var compressed = new Uint8Array(self.crai);
+        this.index = [];
+        var compressed = new Uint8Array(this.crai);
         var gunzip = new Zlib.Gunzip(compressed);
         const plain = gunzip.decompress();
-        const lines = plain.split('\n');
+        const plaintext = String.fromCharCode.apply("", plain);
+        const lines = plaintext.split('\n');
         lines.forEach((line) => {
             const l = line.split('\t');
             if (l.length == 6) {
-                self.index.push([
+                this.index.push([
                     parseInt(l[0], 10),
                     parseInt(l[1], 10),
                     parseInt(l[2], 10),

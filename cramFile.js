@@ -148,7 +148,7 @@ class CramFile {
     }
 
     readArrayItf8() {
-        result = [];
+        var result = [];
         for (var i = 0; i < this.readItf8(); i++) {
             result.push(this.readItf8());
         }
