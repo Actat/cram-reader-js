@@ -127,7 +127,7 @@ class CramSlice {
                 tagValue = this.decodeItem(self.container.compressionHeaderBlock['content']['tv'][elm]['valuesEncoding'], 'ByteArray')
             } else {
                 console.error("tagType'" + String(tagType) + "' is not supported.");
-                continue;
+                return;
             }
             tags[elm] = tagValue;
         });

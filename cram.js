@@ -1,11 +1,11 @@
 class Cram {
-    constructor(cramFile, craiFile) {
-        this.cram = cramFile;
-        if (isCram30File()) {
-            this.crai = craiFile;
-            loadCraiFile();
-            cramFile.seek(6);
-            this.fileid = new Uint8Array(cramFile.read(20));
+    constructor(cramBuffer, craiBuffer) {
+        this.cram = new CramFile(cramBuffer);
+        if (this.isCram30File()) {
+            this.crai = craiBuffer;
+            this.loadCraiFile();
+            this.cram.seek(6);
+            this.fileid = new Uint8Array(this.cram.read(20));
         } else {
             console.error("Passed file is not a cram 3.0 file.");
         }
@@ -15,7 +15,7 @@ class Cram {
         if (typeof this.chrName !== 'undefined') {
             return;
         }
-        getSamHeader();
+        this.getSamHeader();
         this.samHeader.forEach((l) => {
             if (l[0] == '@SQ') {
                 this.chrName.push(l[1]['SN']);
@@ -24,10 +24,10 @@ class Cram {
     }
 
     getRecords(chrName, start, end) {
-        result = [];
+        var result = [];
         // translate from chrName to reference sequence id
         if (typeof this.chrName === 'undefined') {
-            createChrNameList();
+            this.createChrNameList();
         }
         const id = this.chrName.indexOf(chrName);
         // find slices by id, start and end
@@ -58,9 +58,11 @@ class Cram {
     }
 
     isCram30File() {
-        this.cramFile.seek(0);
-        var head = String.fromCharCode.apply("", new Uint16Array(this.cramFile.read(6)));
-        return head === 'CRAM30';
+        this.cram.seek(0);
+        var buf = this.cram.read(4);
+        var head = String.fromCharCode.apply("", new Uint8Array(buf));
+        var version = new Uint8Array(this.cram.read(2));
+        return head === 'CRAM' && version[0] == 3 && version[1] == 0;
     }
 
     loadCraiFile() {

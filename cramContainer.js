@@ -2,7 +2,7 @@ class CramContainer {
     constructor(cram, pos) {
         this.cram = cram;
         this.pos = pos;
-        readHeader()
+        this.readHeader()
     }
 
     decodeTagDictionary(arrBuf){
@@ -31,55 +31,61 @@ class CramContainer {
         var chb = new Map();
         const data = new CramFile(b['data'])
         // preservation map
-        chb['pm'] = {'RN': True, 'AP': True, 'RR': True};
-        const size = data.readItf8();
-        const number = data.readItf8();
-        for (var i = 0; i < number; i++) {
-            const k = String.fromCharCode.apply("", new Uint16Array(data.read(2)));
-            var v;
-            if (k == 'RN' || k == 'AP' || k == 'RR') {
-                v = data.readBoolean();
-            } else if (k == 'SM') {
-                v = data.read(5);
-            } else if (k == 'TD') {
-                v = this.decodeTagDictionary(data.readArrayByte());
-            } else {
-                continue;
+        {
+            chb['pm'] = {'RN': True, 'AP': True, 'RR': True};
+            const size = data.readItf8();
+            const number = data.readItf8();
+            for (var i = 0; i < number; i++) {
+                const k = String.fromCharCode.apply("", new Uint16Array(data.read(2)));
+                var v;
+                if (k == 'RN' || k == 'AP' || k == 'RR') {
+                    v = data.readBoolean();
+                } else if (k == 'SM') {
+                    v = data.read(5);
+                } else if (k == 'TD') {
+                    v = this.decodeTagDictionary(data.readArrayByte());
+                } else {
+                    continue;
+                }
+                chb['pm'][k] = v;
             }
-            chb['pm'][k] = v;
         }
         // data series encodings
-        chb['dse'] = new Map();
-        const size = data.readItf8();
-        const number = data.readItf8();
-        for (var i = 0; i < number; i++) {
-            const k = String.fromCharCode.apply("", new Uint16Array(data.read(2)));
-            var v;
-            if (['BF', 'CF', 'RI', 'RL', 'AP', 'RG', 'MF', 'NS', 'NP', 'TS'
-                , 'NF', 'TL', 'FN', 'FP', 'DL', 'RS', 'PD', 'HC', 'MQ'].includes(k)) {
-                v = data.readEncodingInt();
-            } else if (['RN', 'BB', 'QQ', 'IN', 'SC'].includes(k)) {
-                v = data.readEncodingByteArray();
-            } else if (['FC', 'BS', 'BA', 'QS'].includes(k)) {
-                v = data.readEncodingByte();
-            } else{
-                continue
+        {
+            chb['dse'] = new Map();
+            const size = data.readItf8();
+            const number = data.readItf8();
+            for (var i = 0; i < number; i++) {
+                const k = String.fromCharCode.apply("", new Uint16Array(data.read(2)));
+                var v;
+                if (['BF', 'CF', 'RI', 'RL', 'AP', 'RG', 'MF', 'NS', 'NP', 'TS'
+                    , 'NF', 'TL', 'FN', 'FP', 'DL', 'RS', 'PD', 'HC', 'MQ'].includes(k)) {
+                    v = data.readEncodingInt();
+                } else if (['RN', 'BB', 'QQ', 'IN', 'SC'].includes(k)) {
+                    v = data.readEncodingByteArray();
+                } else if (['FC', 'BS', 'BA', 'QS'].includes(k)) {
+                    v = data.readEncodingByte();
+                } else{
+                    continue;
+                }
+                chb['dse'][k] = v;
             }
-            chb['dse'][k] = v;
         }
         // tag encoding map
-        chb['tv'] = new Map();
-        const size = data.readItf8();
-        const number = data.readItf8();
-        for (var i = 0; i < number; i++) {
-            const k = data.readItf8();
-            const key = String.fromCharCode((k & 0xff0000) >> 16, (k & 0xff00) >> 8, k & 0xff);
-            const v = data.readEncodingByteArray();
-            chb['tv'][key] = v;
+        {
+            chb['tv'] = new Map();
+            const size = data.readItf8();
+            const number = data.readItf8();
+            for (var i = 0; i < number; i++) {
+                const k = data.readItf8();
+                const key = String.fromCharCode((k & 0xff0000) >> 16, (k & 0xff00) >> 8, k & 0xff);
+                const v = data.readEncodingByteArray();
+                chb['tv'][key] = v;
+            }
+            b['content'] = chb;
+            self.compressionHeaderBlock = b;
+            return self.compressionHeaderBlock;
         }
-        b['content'] = chb
-        self.compressionHeaderBlock = b
-        return self.compressionHeaderBlock
     }
 
     /*

@@ -1,7 +1,7 @@
 class CramFile {
 
-    constructor(arrayBuffer) {
-        this.arrayBuffer = arrayBuffer;
+    constructor(arrBuf) {
+        this.arrBuf = arrBuf;
         this.index = 0;
     }
 
@@ -14,7 +14,7 @@ class CramFile {
     }
 
     read(i) {
-        const sliced = this.arrayBuffer.slice(this.index, this.index + i);
+        const sliced = this.arrBuf.slice(this.index, this.index + i);
         this.index += i;
         return sliced;
     }
