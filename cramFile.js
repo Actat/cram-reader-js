@@ -1,6 +1,3 @@
-// import cramRans
-// import gzip
-
 class CramFile {
 
     constructor(arrayBuffer) {
@@ -8,50 +5,88 @@ class CramFile {
         this.index = 0;
     }
 
-    readInt8(f) {
-        return int.from_bytes(f.read(1), byteorder='little', signed=True)
+    tell() {
+        return this.index;
     }
 
-    readUint8(f) {
-        return int.from_bytes(f.read(1), byteorder='little', signed=False)
+    seek(i) {
+        this.index = i;
     }
 
-    readInt16(f) {
-        return int.from_bytes(f.read(2), byteorder='little', signed=True)
+    read(i) {
+        const sliced = this.arrayBuffer.slice(this.index, this.index + i);
+        this.index += i;
+        return sliced;
     }
 
-    readUint16(f) {
-        return int.from_bytes(f.read(2), byteorder='little', signed=False)
+    readInt8() {
+        const view = new DataView(this.read(1));
+        return view.getInt8(0);
     }
 
-    readInt32(f) {
-        return int.from_bytes(f.read(4), byteorder='little', signed=True)
+    readInt16() {
+        const view = new DataView(this.read(2));
+        return view.getInt16(0, true);
     }
 
-    readUint32(f) {
-        return int.from_bytes(f.read(4), byteorder='little', signed=False)
+    readInt32() {
+        const view = new DataView(this.read(4));
+        return view.getInt32(0, true);
     }
 
-    readInt64(f) {
-        return int.from_bytes(f.read(8), byteorder='little', signed=True)
+    readInt64() {
+        const view = new DataView(this.read(8));
+        return view.getBigInt64(0, true);
     }
 
-    readBoolean(f) {
-        return f.read(1) == bytes([1])
+    readUint8() {
+        const view = new DataView(this.read(1));
+        return view.getUint8(0);
     }
 
-    readItf8(f) {
-        firstByte = f.read(1)
-        if (firstByte[0] >> 7 == 0b0) {
-            return firstByte[0] & 0b01111111
-        } else if (firstByte[0] >> 6 == 0b10) {
-            return ((firstByte[0] & 0b00111111) << 8) | int.from_bytes(f.read(1), byteorder='big')
-        } else if (firstByte[0] >> 5 == 0b110) {
-            return ((firstByte[0] & 0b00011111) << 16) | int.from_bytes(f.read(2), byteorder='big')
-        } else if (firstByte[0] >> 4 == 0b1110) {
-            return ((firstByte[0] & 0b00001111) << 24) | int.from_bytes(f.read(3), byteorder='big')
+    readUint16() {
+        const view = new DataView(this.read(2));
+        return view.getUint16(0, true);
+    }
+
+    readUint32() {
+        const view = new DataView(this.read(4));
+        return view.getUint32(0, true);
+    }
+
+    readUint64() {
+        const view = new DataView(this.read(8));
+        return view.getBigUint64(0, true);
+    }
+
+    readBoolean() {
+        const view = new DataView(this.read(1));
+        const i =  view.getInt8(0, true);
+        return i == 1;
+    }
+
+    readItf8() {
+        const firstByte = this.readUint8();
+        if (firstByte >> 7 == 0b0) {
+            return firstByte & 0b01111111;
+        } else if (firstByte >> 6 == 0b10) {
+            const i = this.readUint8();
+            return ((firstByte & 0b00111111) << 8) | i;
+        } else if (firstByte >> 5 == 0b110) {
+            const i = this.readUint8();
+            const j = this.readUint8();
+            return ((firstByte & 0b00011111) << 16) | i << 8 | j;
+        } else if (firstByte >> 4 == 0b1110) {
+            const i = this.readUint8();
+            const j = this.readUint8();
+            const k = this.readUint8();
+            return ((firstByte & 0b00001111) << 24) | i << 16 | j << 8 | k;
         } else {
-            num = ((firstByte[0] & 0b00001111) << 28) | (int.from_bytes(f.read(3), byteorder='big') << 4) | (f.read(1)[0] & 0b00001111)
+            const i = this.readUint8();
+            const j = this.readUint8();
+            const k = this.readUint8();
+            const l = this.readUint8();
+            num = ((firstByte & 0b00001111) << 28) | i << 20 | j << 12 | k << 4 | (l & 0b00001111);
             if (num < 2 ** 31) {
                 return num
             } else {
@@ -60,172 +95,179 @@ class CramFile {
         }
     }
 
-    readLtf8(f) {
-        firstByte = f.read(1)
+    readLtf8() {
+        const firstByte = BigInt(this.readUint8());
 
-        if (firstByte[0] >> 7 == 0b0) {
-            return firstByte[0] & 0b01111111
-        } else if (firstByte[0] >> 6 == 0b10) {
-            return ((firstByte[0] & 0b00111111) << 8) | int.from_bytes(f.read(1), byteorder='big')
-        } else if (firstByte[0] >> 5 == 0b110) {
-            return ((firstByte[0] & 0b00011111) << 16) | int.from_bytes(f.read(2), byteorder='big')
-        } else if (firstByte[0] >> 4 == 0b1110) {
-            return ((firstByte[0] & 0b00001111) << 24) | int.from_bytes(f.read(3), byteorder='big')
-        } else if (firstByte[0] >> 3 == 0b11110) {
-            return ((firstByte[0] & 0b00000111) << 32) | int.from_bytes(f.read(4), byteorder='big')
-        } else if (firstByte[0] >> 2 == 0b111110) {
-            return ((firstByte[0] & 0b00000011) << 40) | int.from_bytes(f.read(5), byteorder='big')
-        } else if (firstByte[0] >> 1 == 0b1111110) {
-            return ((firstByte[0] & 0b00000001) << 48) | int.from_bytes(f.read(6), byteorder='big')
-        } else if (firstByte[0] == 0b11111110) {
-            return int.from_bytes(f.read(7), byteorder='big')
+        if (firstByte >> 7n == 0b0n) {
+            return firstByte & 0b01111111n
+        } else if (firstByte >> 6n == 0b10n) {
+            const i = BigInt(this.readInt8());
+            return ((firstByte & 0b00111111n) << 8n) | i;
+        } else if (firstByte >> 5n == 0b110n) {
+            const i = BigInt(this.readUint8());
+            const j = BigInt(this.readUint8());
+            return ((firstByte & 0b00011111n) << 16n) | i << 8n | j;
+        } else if (firstByte >> 4n == 0b1110n) {
+            const i = BigInt(this.readUint8());
+            const j = BigInt(this.readUint8());
+            const k = BigInt(this.readUint8());
+            return ((firstByte & 0b00001111n) << 24n) | i << 16n | j << 8n | k;
+        } else if (firstByte >> 3n == 0b11110n) {
+            const i = BigInt(this.readUint8());
+            const j = BigInt(this.readUint8());
+            const k = BigInt(this.readUint8());
+            const l = BigInt(this.readUint8());
+            return ((firstByte & 0b00000111n) << 32n) | i << 24n | j << 16n | k << 8n | l;
+        } else if (firstByte >> 2n == 0b111110n) {
+            const i = BigInt(this.readUint8());
+            const j = BigInt(this.readUint8());
+            const k = BigInt(this.readUint8());
+            const l = BigInt(this.readUint8());
+            const m = BigInt(this.readUint8());
+            return ((firstByte & 0b00000011n) << 40n) | i << 32n | j << 24n | k << 16n | l << 8n| m;
+        } else if (firstByte >> 1n == 0b1111110n) {
+            const i = BigInt(this.readUint8());
+            const j = BigInt(this.readUint8());
+            const k = BigInt(this.readUint8());
+            const l = BigInt(this.readUint8());
+            const m = BigInt(this.readUint8());
+            const n = BigInt(this.readUint8());
+            return ((firstByte & 0b00000001n) << 48n) | i << 40n | j << 32n | k << 24n | l << 16n | m << 8n | n;
+        } else if (firstByte == 0b11111110n) {
+            const i = BigInt(this.readUint8());
+            const j = BigInt(this.readUint8());
+            const k = BigInt(this.readUint8());
+            const l = BigInt(this.readUint8());
+            const m = BigInt(this.readUint8());
+            const n = BigInt(this.readUint8());
+            const o = BigInt(this.readUint8());
+            return i << 48n | j << 40n | k << 32n | l << 24n | m << 16n | n << 8n | o;
         } else {
-            num = int.from_bytes(f.read(8), byteorder='big')
-            if (num < 2 ** 63) {
-                return num
-            } else {
-                return num - 2 ** 64
-            }
+            return this.readInt64();
         }
     }
 
-    readArrayItf8(f) {
-        result = list()
-        for (var i = 0; i < readItf8(f); i++) {
-            result.append(readItf8(f))
+    readArrayItf8() {
+        result = [];
+        for (var i = 0; i < this.readItf8(); i++) {
+            result.push(this.readItf8());
         }
-        return result
+        return result;
     }
 
-    readArrayByte(f) {
-        result = list()
-        for (var i = 0; i < readItf8(f); i++) {
-            result.append(f.read(1))
-        }
-        return result
+    readArrayByte() {
+        const length = this.readItf8();
+        return this.read(length);
     }
 
-    readEncodingInt(f) {
-        codecId = readItf8(f)
-        numberOfBytesToFollow = readItf8(f)
-        if (codecId == 1) {
-            // console.log('EXTERNAL: codec ID 1')
-            return {
-                'codecId' : 1,
-                'externalId' : readItf8(f)
-            }
-        } else if (codecId == 3) {
-            // console.log('Huffman coding: codec ID 3')
-            return {
-                'codecId' : 3,
-                'alphabet' : readArrayItf8(f),
-                'bit-length' : readArrayItf8(f)
-            }
-        } else if (codecId == 6) {
-            // console.log('Beta coding: codec ID 6')
-            return {
-                'codecId' : 6,
-                'offset' : readItf8(f),
-                'length' : readItf8(f)
-            }
-        } else if (codecId == 7) {
-            // console.log('Subexponential coding: codec ID 7')
-            return {
-                'codecId' : 7,
-                'offset' : readItf8(f),
-                'k' : readItf8(f)
-            }
-        } else if (codecId == 9) {
-            // console.log('Gamma coding: codec ID 9')
-            return {
-                'codecId' : 9,
-                'offset' : readItf8(f)
-            }
+    readEncodingInt() {
+        var result = new Map();
+        result.set('codecId', this.readItf8());
+        const numberOfBytesToFollow = this.readItf8();
+        if (result.get('codecId') == 1) {
+            // EXTERNAL: codec ID 1
+            result.set('externalId', this.readItf8());
+            return result;
+        } else if (result.get('codecId') == 3) {
+            // Huffman coding: codec ID 3
+            result.set('alphabet', this.readArrayItf8());
+            result.set('bit-length', this.readArrayItf8());
+            return result;
+        } else if (result.get('codecId') == 6) {
+            // Beta coding: codec ID 6
+            result.set('offset', this.readItf8());
+            result.set('length', this.readItf8());
+            return result;
+        } else if (result.get('codecId') == 7) {
+            // Subexponential coding: codec ID 7
+            result.set('offset', this.readItf8());
+            result.set('k', readItf8());
+            return result;
+        } else if (result.get('codecId') == 9) {
+            // Gamma coding: codec ID 9
+            result.set('offset', readItf8());
+            return result;
+        } else {
+            console.log('Error: invalid codec ID');
+            return result;
+        }
+    }
+
+    readEncodingByte() {
+        var result = new Map();
+        result.set('codecId', this.readItf8());
+        const numberOfBytesToFollow = this.readItf8(f);
+
+        if (result.get('codecId') == 1) {
+            // EXTERNAL: codec ID 1
+            result.set('externalId', this.readItf8());
+            return result;
+        } else if (result.get('codecId') == 3) {
+            // Huffman coding: codec ID 3
+            result.set('alphabet', this.readArrayItf8());
+            result.set('bit-length', this.readArrayItf8());
+            return result;
+        } else {
+            console.log('Error: invalid codec ID');
+            return result;
+        }
+    }
+
+    readEncodingByteArray() {
+        var result = new Map();
+        result.set('codecId', this.readItf8());
+        const numberOfBytesToFollow = this.readItf8();
+        if (result.get('codecId') == 4) {
+            // BYTE_ARRAY_LEN: codec ID 4
+            result.set('lengthsEncoding', this.readEncodingInt());
+            result.set('valuesEncoding', this.readEncodingByte());
+            return result;
+        } else if (result.get('codecId') == 5) {
+            // BYTE_ARRAY_STOP: codec ID 5
+            result.set('stopByte', this.read(1));
+            result.set('externalId', this.readItf8(f));
+            return result;
         } else {
             console.log('Error: invalid codec ID')
-            return {}
+            return result;
         }
     }
 
-    readEncodingByte(f) {
-        codecId = readItf8(f)
-        numberOfBytesToFollow = readItf8(f)
-        if (codecId == 1) {
-            // console.log('EXTERNAL: codec ID 1')
-            return {
-                'codecId' : 1,
-                'externalId' : readItf8(f)
-            }
-        } else if (codecId == 3) {
-            // console.log('Huffman coding: codec ID 3')
-            return {
-                'codecId' : 3,
-                'alphabet' : readArrayItf8(f),
-                'bit-length' : readArrayItf8(f)
-            }
-        } else {
-            console.log('Error: invalid codec ID')
-            return {}
-        }
-    }
-
-    readEncodingByteArray(f) {
-        codecId = readItf8(f)
-        numberOfBytesToFollow = readItf8(f)
-        if (codecId == 4) {
-            // console.log('BYTE_ARRAY_LEN: codec ID 4')
-            return {
-                'codecId' : 4,
-                'lengthsEncoding' : readEncodingInt(f),
-                'valuesEncoding' : readEncodingByte(f)
-            }
-        } else if (codecId == 5) {
-            // console.log('BYTE_ARRAY_STOP: codec ID 5')
-            return {
-                'codecId' : 5,
-                'stopByte' : f.read(1),
-                'externalId' : readItf8(f)
-            }
-        } else {
-            console.log('Error: invalid codec ID')
-            return {}
-        }
-    }
-
-    readBlock(f, pos = -1) {
-        result = {}
+    readBlock(pos = -1) {
+        var result = new Map();
         if (pos >= 0) {
-            f.seek(pos)
-            p = pos
-        } else {
-            p = f.tell()
+            this.seek(pos);
         }
-        result["method"] = int.from_bytes(f.read(1), byteorder='big')
-        result["contentTypeId"] = int.from_bytes(f.read(1), byteorder='big')
-        result["contentId"] = readItf8(f)
-        result["size"] = readItf8(f)
-        result["rawSize"] = readItf8(f)
-        data = f.read(result["size"])
-        if (result["method"] == 0) {
+        const p = this.tell();
+        result.set("method", this.readInt8());
+        result.set("contentTypeId", this.readInt8());
+        result.set("contentId", this.readItf8());
+        result.set("size", this.readItf8());
+        result.set("rawSize", this.readItf8());
+        const data = this.read(result.get("size"));
+        if (result.get("method") == 0) {
             // raw
-            result["data"] = data
-        } else if (result["method"] == 1) {
+            result.set("data", data);
+        } else if (result.get("method") == 1) {
             // gzip
-            result["data"] = gzip.decompress(data)
-        } else if (result["method"] == 2) {
+            var compressed = new Uint8Array(data);
+            var gunzip = new Zlib.Gunzip(compressed);
+            var plain = gunzip.decompress();
+            result.set("data", plain);
+        } else if (result.get("method") == 2) {
             // bzip2
-            console.log("bzip2 is not supported (contentTypeId: " + str(result.get("contentTypeId")) + ", contentId: " + str(result.get("contentId")) + ")")
+            console.log("bzip2 is not supported (contentTypeId: " + str(result.get("contentTypeId")) + ", contentId: " + str(result.get("contentId")) + ")");
             //result["data"] = data
-        } else if (result["method"] == 3) {
+        } else if (result.get("method") == 3) {
             // lzma
-            console.log("lzma is not supported (contentTypeId: " + str(result.get("contentTypeId")) + ", contentId: " + str(result.get("contentId")) + ")")
+            console.log("lzma is not supported (contentTypeId: " + str(result.get("contentTypeId")) + ", contentId: " + str(result.get("contentId")) + ")");
             //result["data"] = data
-        } else if (result["method"] == 4) {
+        } else if (result.get("method") == 4) {
             // rans
-            result["data"] = cramRans.ransDecode(data)
+            result.set("data", cramRans.ransDecode(data));
         }
-        result['CRC32'] = f.read(4)
-        result['blockSize'] = f.tell() - p
+        result.set('CRC32', this.readUint32());
+        result.set('blockSize', this.tell() - p);
         return result
     }
 }
