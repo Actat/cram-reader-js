@@ -9,10 +9,10 @@ class BitsIO {
         var i = 0;
         var j = size;
         while (j > 0) {
-            i += this.readNextBit() * (2 ** (j - 1))
-            j -= 1
+            i += this.readNextBit() * (2 ** (j - 1));
+            j -= 1;
         }
-        return i
+        return i;
     }
 
     readNextBit() {
@@ -20,9 +20,9 @@ class BitsIO {
         if (this.pos == 0) {
             this.popNextByte();
         } else {
-            this.pos -= 1
+            this.pos -= 1;
         }
-        return i
+        return i;
     }
 
     popNextByte() {

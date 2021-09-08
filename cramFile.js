@@ -41,6 +41,9 @@ class CramFile {
 
     readUint8() {
         const view = new DataView(this.read(1));
+        if (view.byteLength < 1) {
+            return 0;
+        }
         return view.getUint8(0);
     }
 
@@ -86,7 +89,7 @@ class CramFile {
             const j = this.readUint8();
             const k = this.readUint8();
             const l = this.readUint8();
-            num = ((firstByte & 0b00001111) << 28) | i << 20 | j << 12 | k << 4 | (l & 0b00001111);
+            const num = ((firstByte & 0b00001111) << 28) | i << 20 | j << 12 | k << 4 | (l & 0b00001111);
             if (num < 2 ** 31) {
                 return num
             } else {
@@ -149,7 +152,8 @@ class CramFile {
 
     readArrayItf8() {
         var result = [];
-        for (var i = 0; i < this.readItf8(); i++) {
+        const length = this.readItf8();
+        for (var i = 0; i < length; i++) {
             result.push(this.readItf8());
         }
         return result;
@@ -196,7 +200,7 @@ class CramFile {
     readEncodingByte() {
         var result = new Map();
         result.set('codecId', this.readItf8());
-        const numberOfBytesToFollow = this.readItf8(f);
+        const numberOfBytesToFollow = this.readItf8();
 
         if (result.get('codecId') == 1) {
             // EXTERNAL: codec ID 1
@@ -225,7 +229,7 @@ class CramFile {
         } else if (result.get('codecId') == 5) {
             // BYTE_ARRAY_STOP: codec ID 5
             result.set('stopByte', this.read(1));
-            result.set('externalId', this.readItf8(f));
+            result.set('externalId', this.readItf8());
             return result;
         } else {
             console.log('Error: invalid codec ID')
@@ -253,7 +257,7 @@ class CramFile {
             var compressed = new Uint8Array(data);
             var gunzip = new Zlib.Gunzip(compressed);
             var plain = gunzip.decompress();
-            result.set("data", plain);
+            result.set("data", plain.buffer);
         } else if (result.get("method") == 2) {
             // bzip2
             console.log("bzip2 is not supported (contentTypeId: " + str(result.get("contentTypeId")) + ", contentId: " + str(result.get("contentId")) + ")");
@@ -264,7 +268,8 @@ class CramFile {
             //result["data"] = data
         } else if (result.get("method") == 4) {
             // rans
-            result.set("data", cramRans.ransDecode(data));
+            var cr = new CramRans(data);
+            result.set("data", cr.ransDecode());
         }
         result.set('CRC32', this.readUint32());
         result.set('blockSize', this.tell() - p);

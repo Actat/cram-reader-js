@@ -15,6 +15,7 @@ class Cram {
         if (typeof this.chrName !== 'undefined') {
             return;
         }
+        this.chrName = [];
         this.getSamHeader();
         this.samHeader.forEach((l) => {
             if (l[0] == '@SQ') {
@@ -37,6 +38,7 @@ class Cram {
                 const container = new CramContainer(this.cram, s[3]);
                 const cramSlice = new CramSlice(container, s[4]);
                 const records = cramSlice.getRecords();
+                console.log(records)
                 records.forEach((r) => {
                     if (r.refSeqId == id && r.position <= end && r.position + r.readLength >= start) {
                         result.push(r);
@@ -51,10 +53,10 @@ class Cram {
         if (typeof this.samHeader !== 'undefined') {
             return;
         }
-        c = new CramContainer(this.cram, 26);
-        b = this.cram.readBlock(this.cram, c.pos + c.headerLength);
-        t = String.fromCharCode.apply("", new Uint16Array(b["data"]));
-        this.samHeader = parseSamHeader(t);
+        var c = new CramContainer(this.cram, 26);
+        var b = this.cram.readBlock(c.pos + c.headerLength);
+        var t = String.fromCharCode.apply("", new Uint8Array(b.get("data")));
+        this.samHeader = this.parseSamHeader(t);
     }
 
     isCram30File() {

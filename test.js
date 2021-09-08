@@ -16,6 +16,7 @@ function test() {
             result.forEach(r => {
                 console.log(r);
             });
+            console.log("finished.");
         });
     });
 }

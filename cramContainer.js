@@ -10,14 +10,14 @@ class CramContainer {
         var d = [];
         var i = 0;
         while (i + 2 < arrBuf.byteLength) {
-            tmp = []
+            var tmp = []
             while (data[i] != '\0'.charCodeAt(0)) {
-                tagId = String.fromCharCode(data[i], data[i + 1]);
-                tagType = String.fromCharCode(data[i + 2]);
-                tmp.append(tagId + tagType)
+                var tagId = String.fromCharCode(data[i], data[i + 1]);
+                var tagType = String.fromCharCode(data[i + 2]);
+                tmp.push(tagId + tagType)
                 i += 3
             }
-            d.append(tmp)
+            d.push(tmp)
             i += 1
         }
         return d
@@ -29,14 +29,17 @@ class CramContainer {
         }
         var b = this.cram.readBlock(this.pos + this.headerLength);
         var chb = new Map();
-        const data = new CramFile(b['data'])
+        const data = new CramFile(b.get('data'));
         // preservation map
         {
-            chb['pm'] = {'RN': True, 'AP': True, 'RR': True};
+            chb.set('pm', new Map());
+            chb.get('pm').set('RN', true);
+            chb.get('pm').set('AP', true);
+            chb.get('pm').set('RR', true);
             const size = data.readItf8();
             const number = data.readItf8();
             for (var i = 0; i < number; i++) {
-                const k = String.fromCharCode.apply("", new Uint16Array(data.read(2)));
+                const k = String.fromCharCode.apply("", new Uint8Array(data.read(2)));
                 var v;
                 if (k == 'RN' || k == 'AP' || k == 'RR') {
                     v = data.readBoolean();
@@ -47,16 +50,16 @@ class CramContainer {
                 } else {
                     continue;
                 }
-                chb['pm'][k] = v;
+                chb.get('pm').set(k, v);
             }
         }
         // data series encodings
         {
-            chb['dse'] = new Map();
+            chb.set('dse', new Map());
             const size = data.readItf8();
             const number = data.readItf8();
             for (var i = 0; i < number; i++) {
-                const k = String.fromCharCode.apply("", new Uint16Array(data.read(2)));
+                const k = String.fromCharCode.apply("", new Uint8Array(data.read(2)));
                 var v;
                 if (['BF', 'CF', 'RI', 'RL', 'AP', 'RG', 'MF', 'NS', 'NP', 'TS'
                     , 'NF', 'TL', 'FN', 'FP', 'DL', 'RS', 'PD', 'HC', 'MQ'].includes(k)) {
@@ -68,24 +71,24 @@ class CramContainer {
                 } else{
                     continue;
                 }
-                chb['dse'][k] = v;
+                chb.get('dse').set(k, v);
             }
         }
         // tag encoding map
         {
-            chb['tv'] = new Map();
+            chb.set('tv', new Map());
             const size = data.readItf8();
             const number = data.readItf8();
             for (var i = 0; i < number; i++) {
                 const k = data.readItf8();
                 const key = String.fromCharCode((k & 0xff0000) >> 16, (k & 0xff00) >> 8, k & 0xff);
                 const v = data.readEncodingByteArray();
-                chb['tv'][key] = v;
+                chb.get('tv').set(key, v);
             }
-            b['content'] = chb;
-            self.compressionHeaderBlock = b;
-            return self.compressionHeaderBlock;
         }
+        b.set('content', chb);
+        this.compressionHeaderBlock = b;
+        return this.compressionHeaderBlock;
     }
 
     /*
