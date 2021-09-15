@@ -99,10 +99,10 @@ class CramSlice {
                     r.position + (r.bf & 0x10 != 0x10 ? rmb - 1 : - rmb + 1),
                     n.position,
                     n.position - (n.bf & 0x10 != 0x10 ? nmb - 1 : - nmb + 1)];
-                var leftmost = min(l);
-                var rightmost = max(l);
-                var lm = (l.index(leftmost) < 2 ? r : n);
-                var rm = (l.index(rightmost) < 2 ? r : n);
+                var leftmost = Math.min(l);
+                var rightmost = Math.max(l);
+                var lm = (l.indexOf(leftmost) < 2 ? r : n);
+                var rm = (l.indexOf(rightmost) < 2 ? r : n);
                 // For leftmost of this and this + next_frag record: template_size <- rightmost - leftmost + 1
                 lm.templateSize = rightmost - leftmost + 1;
                 // For rightmost of this and this + next_frag record: template_size <- -(rightmost - leftmost + 1)
