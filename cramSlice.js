@@ -153,30 +153,30 @@ class CramSlice {
         const featureCode = String(this.readItem('FC', 'Byte'));
         const featurePosition = this.readItem('FP', 'Int');
         if (featureCode == 'B') {
-            r.features['base'] = this.readItem('BA', 'Byte');
-            r.features['qualityScore'] = this.readItem('QS', 'Byte');
+            r.features.set('base', this.readItem('BA', 'Byte'));
+            r.features.set('qualityScore', this.readItem('QS', 'Byte'));
         } else if (featureCode == 'X') {
-            r.features['X'] = this.readItem('BS', 'Byte');
+            r.features.set('X', this.readItem('BS', 'Byte'));
         } else if (featureCode == 'I') {
-            r.features['I'] = this.readItem('IN', 'ByteArray');
+            r.features.set('I', this.readItem('IN', 'ByteArray'));
         } else if (featureCode == 'S') {
-            r.features['S'] = this.readItem('SC', 'ByteArray');
+            r.features.set('S', this.readItem('SC', 'ByteArray'));
         } else if (featureCode == 'H') {
-            r.features['H'] = this.readItem('HC', 'Int');
+            r.features.set('H', this.readItem('HC', 'Int'));
         } else if (featureCode == 'P') {
-            r.features['P'] = this.readItem('PD', 'Int');
+            r.features.set('P', this.readItem('PD', 'Int'));
         } else if (featureCode == 'D') {
-            r.features['D'] = this.readItem('DL', 'Int');
+            r.features.set('D', this.readItem('DL', 'Int'));
         } else if (featureCode == 'N') {
-            r.features['N'] = this.readItem('RS', 'Int');
+            r.features.set('N', this.readItem('RS', 'Int'));
         } else if (featureCode == 'i') {
-            r.features['i'] = this.readItem('BA', 'Byte');
+            r.features.set('i', this.readItem('BA', 'Byte'));
         } else if (featureCode == 'b') {
-            r.features['b'] = this.readItem('BB', 'ByteArray');
+            r.features.set('b', this.readItem('BB', 'ByteArray'));
         } else if (featureCode == 'q') {
-            r.features['q'] = this.readItem('QQ', 'ByteArray');
+            r.features.set('q', this.readItem('QQ', 'ByteArray'));
         } else if (featureCode == 'Q') {
-            r.features['Q'] = this.readItem('QS', 'Byte');
+            r.features.set('Q', this.readItem('QS', 'Byte'));
         }
     }
 
