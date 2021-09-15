@@ -19,7 +19,7 @@ class Cram {
         this.getSamHeader();
         this.samHeader.forEach((l) => {
             if (l[0] == '@SQ') {
-                this.chrName.push(l[1]['SN']);
+                this.chrName.push(l[1].get('SN'));
             }
         });
     }
@@ -99,7 +99,7 @@ class Cram {
             var d = new Map();
             for (var i = 1; i < l.length; i++) {
                 const s = l[i].split(':');
-                d[s[0]] = s[1];
+                d.set(s[0], s[1]);
             }
             result.push([l[0], d]);
         });

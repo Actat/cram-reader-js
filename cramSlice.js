@@ -89,8 +89,8 @@ class CramSlice {
                     n.templateSize = 0;
                     return;
                 }
-                var rmb = r.readLength - (r.hasSoftclip() ? len(r.features['S']) : 0); // mapped bases
-                var nmb = n.readLength - (n.hasSoftclip() ? len(n.features['S']) : 0); // mapped bases
+                var rmb = r.readLength - (r.hasSoftclip() ? len(r.features.get('S')) : 0); // mapped bases
+                var nmb = n.readLength - (n.hasSoftclip() ? len(n.features.get('S')) : 0); // mapped bases
                 var l = [r.position,
                     r.position + (r.bf & 0x10 != 0x10 ? rmb - 1 : - rmb + 1),
                     n.position,
@@ -186,7 +186,7 @@ class CramSlice {
             b[i] = this.readItem('BA', 'Byte');
         }
         r.base = b;
-        if (this.container.compressionHeaderBlock['content']['dse'].includes('QS')) {
+        if (this.container.compressionHeaderBlock.get('content').get('dse').has('QS')) {
             r.qualityScore = this.readQualityScore(r.readLength);
         }
     }
