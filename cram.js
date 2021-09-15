@@ -38,7 +38,6 @@ class Cram {
                 const container = new CramContainer(this.cram, s[3]);
                 const cramSlice = new CramSlice(container, s[4]);
                 const records = cramSlice.getRecords();
-                console.log(records)
                 records.forEach((r) => {
                     if (r.refSeqId == id && r.position <= end && r.position + r.readLength >= start) {
                         result.push(r);
