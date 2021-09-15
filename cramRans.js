@@ -61,8 +61,7 @@ class CramRans {
 
     ransRenorm(R) {
         while (R < (1 << 23)) {
-            var i = this.input.readUint8();
-            R = (R << 8) + i;
+            R = (R << 8) + this.input.readUint8();
         }
         return R;
     }
@@ -71,7 +70,7 @@ class CramRans {
         var F = new Array(256).fill(0);
         var C = new Array(256).fill(0);
         var R = new Array(4).fill(0);
-        this.readFrequencies0(F, C)
+        this.readFrequencies0(F, C);
         for (var j = 0; j < 4; j++) {
             R[j] = this.input.readUint32();
         }
@@ -118,7 +117,7 @@ class CramRans {
         var C = new Array(256).fill(new Array(256).fill(0));
         var R = new Array(4).fill(0);
         var L = new Array(4).fill(0);
-        this.readFrequencies1(F, C)
+        this.readFrequencies1(F, C);
         for (var j = 0; j < 4; j++) {
             R[j] = this.input.readUint32();
             L[j] = 0;
@@ -128,7 +127,7 @@ class CramRans {
             for (var j = 0; j < 4; j++) {
                 var f = this.ransGetCumulativeFreq(R[j]);
                 var s = this.ransGetSymbolFromFreq(C[L[j]], f);
-                output[Math.floor(i + j * nbytes / 4)] = s;
+                output[i + j * Math.floor(nbytes / 4)] = s;
                 R[j] = this.ransAdvanceStep(R[j], C[L[j]][s], F[L[j]][s]);
                 R[j] = this.ransRenorm(R[j]);
                 L[j] = s;
@@ -139,9 +138,9 @@ class CramRans {
         while (i < nbytes) {
             f = this.ransGetCumulativeFreq(R[3]);
             s = this.ransGetSymbolFromFreq(C[L[3]], f);
-            output[Math.floor(i + 3 * nbytes / 4)] = s;
+            output[i + 3 * Math.floor(nbytes / 4)] = s;
             R[3] = this.ransAdvanceStep(R[3], C[L[3]][s], F[L[3]][s]);
-            R[3] = this.ransRenorm(i, R[3]);
+            R[3] = this.ransRenorm(R[3]);
             L[3] = s;
             i += 1;
         }
