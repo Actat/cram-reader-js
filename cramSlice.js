@@ -34,20 +34,24 @@ class CramSlice {
     decodeNames(r) {
         if (this.container.compressionHeaderBlock.get('content').get('pm').get('RN')) {
             var rn = this.readItem('RN', 'ByteArray');
-            r.readName = String(rn);
+            var name = "";
+            rn.forEach(elem => {
+                name += String.fromCharCode(elem);
+            });
+            r.readName = name;
         } else {
             r.readName = this.generateName(r);
         }
     }
 
     decodeMateData(r) {
-        if (r.cf & 2 == 2) {
+        if ((r.cf & 2) == 2) {
             // the next fragment is not in the current slice
             const mateFlag = this.readItem('MF', 'Int');
-            if (mateFlag & 1 == 1) {
+            if ((mateFlag & 1) == 1) {
                 r.bf = r.bf | 0x20
             }
-            if (mateFlag & 2 == 2) {
+            if ((mateFlag & 2) == 2) {
                 r.bf = r.bf | 0x08
             }
             if (this.container.compressionHeaderBlock.get('content').get('pm').get('RN') == false) {
@@ -57,7 +61,7 @@ class CramSlice {
             r.mateRefId = this.readItem('NS', 'Int');
             r.matePos = this.readItem('NP', 'Int');
             r.templateSize = this.readItem('TS', 'Int');
-        } else if (r.cf & 4 == 4) {
+        } else if ((r.cf & 4) == 4) {
             r.nextFrag = this.readItem('NF', 'Int');
         }
     }
