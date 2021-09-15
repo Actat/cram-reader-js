@@ -6,6 +6,6 @@ class CramRecord{
     }
 
     hasSoftclip() {
-        return self.features.has('S');
+        return this.features.has('S');
     }
 }
