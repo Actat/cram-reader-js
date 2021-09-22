@@ -279,13 +279,9 @@ class CramSlice {
     readQualityScore(readLength) {
         var qs = new Array(readLength);
         for (var i = 0; i < readLength; i++) {
-            qs[i] = this.readItem('QS', 'Int')
+            qs[i] = this.readItem('QS', 'Int') + 33; // +33 to match chr with samtools
         }
-        var score = "";
-        qs.forEach(elem => {
-            score += String.fromCharCode(elem);
-        });
-        return String(score);
+        return String.fromCharCode.apply("", qs);
     }
 
     decodeItem(codec, type) {
