@@ -40,6 +40,7 @@ class Cram {
                 const records = cramSlice.getRecords();
                 records.forEach((r) => {
                     if (r.refSeqId == id && r.position <= end && r.position + r.readLength >= start) {
+                        r.restoreCigar();
                         result.push(r);
                     }
                 });
