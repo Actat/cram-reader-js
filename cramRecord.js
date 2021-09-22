@@ -2,11 +2,16 @@ class CramRecord{
     constructor(bf, cf) {
         this.bf = bf;
         this.cf = cf;
-        this.features = new Map();
+        this.features = new Array();
     }
 
     hasSoftclip() {
-        return this.features.has('S');
+        this.features.forEach(map => {
+            if (map.get('FC') == 'S') {
+                return true;
+            }
+        });
+        return false;
     }
 
     restoreCigar() {

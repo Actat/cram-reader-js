@@ -145,34 +145,36 @@ class CramSlice {
     }
 
     decodeFeature(r) {
-        const featureCode = String.fromCharCode.apply("", new Uint8Array(this.readItem('FC', 'Byte')));
-        const featurePosition = this.readItem('FP', 'Int');
-        if (featureCode == 'B') {
-            r.features.set('base', this.readItem('BA', 'Byte'));
-            r.features.set('qualityScore', this.readItem('QS', 'Byte'));
-        } else if (featureCode == 'X') {
-            r.features.set('X', this.readItem('BS', 'Byte'));
-        } else if (featureCode == 'I') {
-            r.features.set('I', this.readItem('IN', 'ByteArray'));
-        } else if (featureCode == 'S') {
-            r.features.set('S', this.readItem('SC', 'ByteArray'));
-        } else if (featureCode == 'H') {
-            r.features.set('H', this.readItem('HC', 'Int'));
-        } else if (featureCode == 'P') {
-            r.features.set('P', this.readItem('PD', 'Int'));
-        } else if (featureCode == 'D') {
-            r.features.set('D', this.readItem('DL', 'Int'));
-        } else if (featureCode == 'N') {
-            r.features.set('N', this.readItem('RS', 'Int'));
-        } else if (featureCode == 'i') {
-            r.features.set('i', this.readItem('BA', 'Byte'));
-        } else if (featureCode == 'b') {
-            r.features.set('b', this.readItem('BB', 'ByteArray'));
-        } else if (featureCode == 'q') {
-            r.features.set('q', this.readItem('QQ', 'ByteArray'));
-        } else if (featureCode == 'Q') {
-            r.features.set('Q', this.readItem('QS', 'Byte'));
+        var f = new Map();
+        f.set('FC', String.fromCharCode.apply("", new Uint8Array(this.readItem('FC', 'Byte'))));
+        f.set('FP', this.readItem('FP', 'Int'));
+        if (f.get('FC') == 'B') {
+            f.set('base', this.readItem('BA', 'Byte'));
+            f.set('qualityScore', this.readItem('QS', 'Byte'));
+        } else if (f.get('FC') == 'X') {
+            f.set('X', this.readItem('BS', 'Byte'));
+        } else if (f.get('FC') == 'I') {
+            f.set('I', this.readItem('IN', 'ByteArray'));
+        } else if (f.get('FC') == 'S') {
+            f.set('S', this.readItem('SC', 'ByteArray'));
+        } else if (f.get('FC') == 'H') {
+            f.set('H', this.readItem('HC', 'Int'));
+        } else if (f.get('FC') == 'P') {
+            f.set('P', this.readItem('PD', 'Int'));
+        } else if (f.get('FC') == 'D') {
+            f.set('D', this.readItem('DL', 'Int'));
+        } else if (f.get('FC') == 'N') {
+            f.set('N', this.readItem('RS', 'Int'));
+        } else if (f.get('FC') == 'i') {
+            f.set('i', this.readItem('BA', 'Byte'));
+        } else if (f.get('FC') == 'b') {
+            f.set('b', this.readItem('BB', 'ByteArray'));
+        } else if (f.get('FC') == 'q') {
+            f.set('q', this.readItem('QQ', 'ByteArray'));
+        } else if (f.get('FC') == 'Q') {
+            f.set('Q', this.readItem('QS', 'Byte'));
         }
+        r.features.push(f);
     }
 
     decodeUnmappedRead(r) {
