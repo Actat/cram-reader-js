@@ -15,7 +15,7 @@ class CramRecord{
     }
 
     restoreCigar() {
-        if('cigar' in this) {
+        if('cigar' in this || !('readLength' in this)) {
             return;
         } else if (this.features.length == 0) {
             this.cigar = String(this.readLength) + "M";
