@@ -93,8 +93,8 @@ class CramSlice {
                     n.templateSize = 0;
                     return;
                 }
-                var rmb = r.readLength - (r.hasSoftclip() ? len(r.features.get('S')) : 0); // mapped bases
-                var nmb = n.readLength - (n.hasSoftclip() ? len(n.features.get('S')) : 0); // mapped bases
+                var rmb = r.readLength - (r.hasSoftclip() ? r.features.get('S').length : 0); // mapped bases
+                var nmb = n.readLength - (n.hasSoftclip() ? n.features.get('S').length : 0); // mapped bases
                 var l = [r.position,
                     r.position + (r.bf & 0x10 != 0x10 ? rmb - 1 : - rmb + 1),
                     n.position,
