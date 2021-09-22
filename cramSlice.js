@@ -151,7 +151,7 @@ class CramSlice {
     }
 
     decodeFeature(r) {
-        const featureCode = String(this.readItem('FC', 'Byte'));
+        const featureCode = String.fromCharCode.apply("", new Uint8Array(this.readItem('FC', 'Byte')));
         const featurePosition = this.readItem('FP', 'Int');
         if (featureCode == 'B') {
             r.features.set('base', this.readItem('BA', 'Byte'));
