@@ -127,7 +127,7 @@ class CramRans {
             for (var j = 0; j < 4; j++) {
                 var f = this.ransGetCumulativeFreq(R[j]);
                 var s = this.ransGetSymbolFromFreq(C[L[j]], f);
-                output[i + j * Math.floor(nbytes / 4)] = s;
+                output[i + Math.floor(j * nbytes / 4)] = s;
                 R[j] = this.ransAdvanceStep(R[j], C[L[j]][s], F[L[j]][s]);
                 R[j] = this.ransRenorm(R[j]);
                 L[j] = s;
@@ -138,7 +138,7 @@ class CramRans {
         while (i < nbytes) {
             f = this.ransGetCumulativeFreq(R[3]);
             s = this.ransGetSymbolFromFreq(C[L[3]], f);
-            output[i + 3 * Math.floor(nbytes / 4)] = s;
+            output[i + Math.floor(3 * nbytes / 4)] = s;
             R[3] = this.ransAdvanceStep(R[3], C[L[3]][s], F[L[3]][s]);
             R[3] = this.ransRenorm(R[3]);
             L[3] = s;
