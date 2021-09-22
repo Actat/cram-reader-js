@@ -91,26 +91,6 @@ class CramContainer {
         return this.compressionHeaderBlock;
     }
 
-    /*
-    isEOFcontainer(self) {
-        return (self.length == 15
-            and self.refSeqId == -1
-            and self.startingRefPos == 4542278
-            and self.alignmentSpan == 0
-            and self.numberOfRecords == 0
-            and self.recordCounter == 0
-            and self.bases == 0
-            and self.numberOfBlocks == 1
-            and self.crc32 == 1339669765)
-    }
-    */
-
-    /*
-    nextPos(self) {
-        return self.pos + self.headerLength + self.length
-    }
-    */
-
     readHeader() {
         this.cram.seek(this.pos);
         this.length = this.cram.readInt32();

@@ -1,10 +1,4 @@
 class CramSlice {
-    //blocks = []
-    //container = None
-    //coreDataBlock = None
-    //offset = 0
-    //sliceHeaderBlock = None
-
     constructor(container, offset) {
         this.container = container
         this.offset = offset
@@ -220,11 +214,6 @@ class CramSlice {
         }
         return this.blocks;
     }
-
-    /*getCoreDataBlock(self, f) {
-        self.getBlocks(f)
-        return self.blocks[0]
-    }*/
 
     getRecords() {
         this.container.getCompressionHeaderBlock();
