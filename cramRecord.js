@@ -18,7 +18,7 @@ class CramRecord{
         if('cigar' in this) {
             return;
         } else if (this.features.size == 0) {
-            this.cigar =  String(this.readLength) + "M";
+            this.cigar = String(this.readLength) + "M";
             return;
         } else {
             // under construction
