@@ -113,8 +113,8 @@ class CramRans {
     }
 
     ransDecode1(output, nbytes) {
-        var F = new Array(256).fill(new Array(256).fill(0));
-        var C = new Array(256).fill(new Array(256).fill(0));
+        var F = Array.from(new Array(256), () => new Array(256).fill(0));
+        var C = Array.from(new Array(256), () => new Array(256).fill(0));
         var R = new Array(4).fill(0);
         var L = new Array(4).fill(0);
         this.readFrequencies1(F, C);
