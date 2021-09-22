@@ -149,30 +149,30 @@ class CramSlice {
         f.set('FC', String.fromCharCode.apply("", new Uint8Array(this.readItem('FC', 'Byte'))));
         f.set('FP', this.readItem('FP', 'Int'));
         if (f.get('FC') == 'B') {
-            f.set('base', this.readItem('BA', 'Byte'));
-            f.set('qualityScore', this.readItem('QS', 'Byte'));
+            f.set('BA', this.readItem('BA', 'Byte'));
+            f.set('QS', this.readItem('QS', 'Byte'));
         } else if (f.get('FC') == 'X') {
-            f.set('X', this.readItem('BS', 'Byte'));
+            f.set('BS', this.readItem('BS', 'Byte'));
         } else if (f.get('FC') == 'I') {
-            f.set('I', this.readItem('IN', 'ByteArray'));
+            f.set('IN', this.readItem('IN', 'ByteArray'));
         } else if (f.get('FC') == 'S') {
-            f.set('S', this.readItem('SC', 'ByteArray'));
+            f.set('SC', this.readItem('SC', 'ByteArray'));
         } else if (f.get('FC') == 'H') {
-            f.set('H', this.readItem('HC', 'Int'));
+            f.set('HC', this.readItem('HC', 'Int'));
         } else if (f.get('FC') == 'P') {
-            f.set('P', this.readItem('PD', 'Int'));
+            f.set('PD', this.readItem('PD', 'Int'));
         } else if (f.get('FC') == 'D') {
-            f.set('D', this.readItem('DL', 'Int'));
+            f.set('DL', this.readItem('DL', 'Int'));
         } else if (f.get('FC') == 'N') {
-            f.set('N', this.readItem('RS', 'Int'));
+            f.set('RS', this.readItem('RS', 'Int'));
         } else if (f.get('FC') == 'i') {
-            f.set('i', this.readItem('BA', 'Byte'));
+            f.set('BA', this.readItem('BA', 'Byte'));
         } else if (f.get('FC') == 'b') {
-            f.set('b', this.readItem('BB', 'ByteArray'));
+            f.set('BB', this.readItem('BB', 'ByteArray'));
         } else if (f.get('FC') == 'q') {
-            f.set('q', this.readItem('QQ', 'ByteArray'));
+            f.set('QQ', this.readItem('QQ', 'ByteArray'));
         } else if (f.get('FC') == 'Q') {
-            f.set('Q', this.readItem('QS', 'Byte'));
+            f.set('QS', this.readItem('QS', 'Byte'));
         }
         r.features.push(f);
     }
