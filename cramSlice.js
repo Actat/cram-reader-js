@@ -141,10 +141,7 @@ class CramSlice {
 
     decodeMappedRead(r) {
         const featureNumber = this.readItem('FN', 'Int');
-        if (featureNumber > 0) {
-            r.features = new Map();
-        }
-        for (var i; i < featureNumber; i++) {
+        for (var i = 0; i < featureNumber; i++) {
             this.decodeFeature(r);
         }
         r.mappingQuality = this.readItem('MQ', 'Int');
