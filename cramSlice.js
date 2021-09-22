@@ -272,16 +272,16 @@ class CramSlice {
         return this.sliceHeaderBlock;
     }
 
-    readItem(key, type = 'Byte') {
-        return this.decodeItem(this.container.compressionHeaderBlock.get('content').get('dse').get(key), type);
-    }
-
     readQualityScore(readLength) {
         var qs = new Array(readLength);
         for (var i = 0; i < readLength; i++) {
             qs[i] = this.readItem('QS', 'Int') + 33; // +33 to match chr with samtools
         }
         return String.fromCharCode.apply("", qs);
+    }
+
+    readItem(key, type = 'Byte') {
+        return this.decodeItem(this.container.compressionHeaderBlock.get('content').get('dse').get(key), type);
     }
 
     decodeItem(codec, type) {
