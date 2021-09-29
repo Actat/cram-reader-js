@@ -72,7 +72,7 @@ class CramRecord{
                         cigarOp.push("I")
                         break;
                     case "I":
-                        lastOpLen = 1;
+                        lastOpLen = feature.get("IN").length;
                         lastOpPos = feature.get("FP");
                         lastOp = "I";
                         cigarLn.push(feature.get("IN").length);
