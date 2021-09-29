@@ -175,6 +175,7 @@ class CramSlice {
             f.set('QS', this.readItem('QS', 'Byte'));
         }
         r.features.push(f);
+        r.sortFeatures();
     }
 
     decodeUnmappedRead(r) {

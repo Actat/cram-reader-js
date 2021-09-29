@@ -14,7 +14,14 @@ class CramRecord{
         return false;
     }
 
+    sortFeatures() {
+        this.features.sort((a, b) => {
+            return a.get('FP') - b.get('FP');
+        })
+    }
+
     restoreCigar() {
+        this.sortFeatures();
         if('cigar' in this || !('readLength' in this)) {
             return;
         } else if (this.features.length == 0) {
