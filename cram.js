@@ -69,12 +69,13 @@ class Cram {
         return head === 'CRAM' && version[0] == 3 && version[1] == 0;
     }
 
-    loadCraiFile() {
+    async loadCraiFile() {
         if (typeof this.index !== 'undefined') {
             return;
         }
+        const craiBuffer = await this.crai.ArrayBuffer();
         this.index = [];
-        var compressed = new Uint8Array(this.crai);
+        var compressed = new Uint8Array(craiBuffer);
         var gunzip = new Zlib.Gunzip(compressed);
         const plain = gunzip.decompress();
         const plaintext = String.fromCharCode.apply("", plain);
