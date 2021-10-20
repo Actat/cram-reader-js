@@ -1,17 +1,19 @@
 class Cram {
     constructor(cramFile, craiFile, localFlag) {
         var cramBuffer = cramFile.arrayBuffer();
-        var craiBuffer = craiFile.arrayBuffer();
-        this.localFlag = localFlag;
-        this.cram = new CramFile(cramBuffer);
-        if (this.isCram30File()) {
-            this.crai = craiBuffer;
-            this.loadCraiFile();
-            this.cram.seek(6);
-            this.fileid = new Uint8Array(this.cram.read(20));
-        } else {
-            console.error("Passed file is not a cram 3.0 file.");
-        }
+        var craiBuffer = cramBuffer.then(craiFile.arrayBuffer());
+        craiBuffer.then(() => {
+            this.localFlag = localFlag;
+            this.cram = new CramFile(cramBuffer);
+            if (this.isCram30File()) {
+                this.crai = craiBuffer;
+                this.loadCraiFile();
+                this.cram.seek(6);
+                this.fileid = new Uint8Array(this.cram.read(20));
+            } else {
+                console.error("Passed file is not a cram 3.0 file.");
+            }
+        })
     }
 
     createChrNameList() {
