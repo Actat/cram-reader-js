@@ -15,10 +15,15 @@ class SeekableArrayBuffer {
         this.index = i;
     }
 
-    read(i) {
+    async read(i) {
         const sliced = this.arrBuf.slice(this.index, this.index + i);
         this.index += i;
-        return sliced;
+        if(this.localFlag) {
+            const buf = await sliced.arrayBuffer();
+            return buf;
+        } else {
+            return sliced;
+        }
     }
 
     readInt8() {
