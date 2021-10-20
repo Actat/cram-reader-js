@@ -1,4 +1,4 @@
-class File {
+class SeekableArrayBuffer {
 
     constructor(arrBuf) {
         this.arrBuf = arrBuf;

@@ -1,4 +1,4 @@
-class CramFile extends File {
+class CramFile extends SeekableArrayBuffer {
 
     readItf8() {
         const firstByte = this.readUint8();
