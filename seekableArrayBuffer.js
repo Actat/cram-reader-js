@@ -15,12 +15,14 @@ class SeekableArrayBuffer {
         this.index = i;
     }
 
-    async read(i) {
+    read(i) {
         const sliced = this.arrBuf.slice(this.index, this.index + i);
         this.index += i;
         if(this.localFlag) {
-            const buf = await sliced.arrayBuffer();
-            return buf;
+            const promise = sliced.arrayBuffer();
+            promise.then(buf => {
+                return buf;
+            });
         } else {
             return sliced;
         }
