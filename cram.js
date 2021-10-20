@@ -1,5 +1,8 @@
 class Cram {
-    constructor(cramBuffer, craiBuffer) {
+    constructor(cramFile, craiFile, localFlag) {
+        var cramBuffer = cramFile.arrayBuffer();
+        var craiBuffer = craiFile.arrayBuffer();
+        this.localFlag = localFlag;
         this.cram = new CramFile(cramBuffer);
         if (this.isCram30File()) {
             this.crai = craiBuffer;

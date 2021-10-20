@@ -11,7 +11,7 @@ function test() {
     console.log(crai);
     cram.arrayBuffer().then(crambuffer => {
         crai.arrayBuffer().then(craibuffer => {
-            var c = new Cram(crambuffer, craibuffer);
+            var c = new Cram(cram, crai, true);
             const  result = c.getRecords(chr, start, end);
             result.forEach(r => {
                 console.log(r);
