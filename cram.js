@@ -2,7 +2,6 @@ class Cram {
     constructor(cramFile, craiFile, localFlag) {
         this.localFlag = localFlag;
         this.cram = new CramFile(cramFile, localFlag);
-        console.log(this.cram);
         if (this.isCram30File()) {
             this.crai = craiFile;
             this.loadCraiFile();
