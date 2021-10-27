@@ -13,19 +13,20 @@ class Cram {
         }
     }
 
-    async createChrNameList() {
+    createChrNameList() {
         if (typeof this.chrName !== 'undefined') {
             return;
         }
         this.chrName = new Promise((resolve, reject) => {
             var chrName = [];
-            await this.getSamHeader();
-            this.samHeader.forEach((l) => {
-                if (l[0] == '@SQ') {
-                    chrName.push(l[1].get('SN'));
-                }
+            this.samHeader.then(() => {
+                this.samHeader.forEach((l) => {
+                    if (l[0] == '@SQ') {
+                        chrName.push(l[1].get('SN'));
+                    }
+                });
+                resolve(chrName);
             });
-            resolve(chrName);
         });
     }
 
