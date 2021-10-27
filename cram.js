@@ -4,8 +4,8 @@ class Cram {
         this.cram = new CramFile(cramFile, localFlag);
         if (this.isCram30File()) {
             this.crai = craiFile;
-            this.loadCraiFile();
-            this.createChrNameList();
+            this.index = this.loadCraiFile();
+            this.chrName = this.createChrNameList();
             this.cram.seek(6);
             this.cram.read(20).then((buf) => {this.fileid = new Uint8Array(buf)});
         } else {
@@ -13,21 +13,18 @@ class Cram {
         }
     }
 
-    createChrNameList() {
+    async createChrNameList() {
         if (typeof this.chrName !== 'undefined') {
-            return;
+            return this.chrName;
         }
-        this.chrName = new Promise((resolve, reject) => {
-            var chrName = [];
-            this.samHeader.then(() => {
-                this.samHeader.forEach((l) => {
-                    if (l[0] == '@SQ') {
-                        chrName.push(l[1].get('SN'));
-                    }
-                });
-                resolve(chrName);
-            });
+        this.samHeader = await this.getSamHeader();
+        var chrName = [];
+        this.samHeader.forEach((l) => {
+            if (l[0] == '@SQ') {
+                chrName.push(l[1].get('SN'));
+            }
         });
+        return chrName;
     }
 
     getRecords(chrName, start, end) {
@@ -63,7 +60,7 @@ class Cram {
         var c = new CramContainer(this.cram, 26);
         var b = await this.cram.readBlock(c.pos + c.headerLength);
         var t = String.fromCharCode.apply("", new Uint8Array(b.get("data")));
-        this.samHeader = this.parseSamHeader(t);
+        return this.parseSamHeader(t);
     }
 
     async isCram30File() {
@@ -77,30 +74,28 @@ class Cram {
 
     async loadCraiFile() {
         if (typeof this.index !== 'undefined') {
-            return;
+            return this.index;
         }
         const craiBuffer = await this.crai.arrayBuffer();
-        this.index = new Promise((resolve, reject) => {
-            var index = [];
-            var compressed = new Uint8Array(craiBuffer);
-            var gunzip = new Zlib.Gunzip(compressed);
-            const plain = gunzip.decompress();
-            const plaintext = String.fromCharCode.apply("", plain);
-            const lines = plaintext.split('\n');
-            lines.forEach((line) => {
-                const l = line.split('\t');
-                if (l.length == 6) {
-                    index.push([
-                        parseInt(l[0], 10),
-                        parseInt(l[1], 10),
-                        parseInt(l[2], 10),
-                        parseInt(l[3], 10),
-                        parseInt(l[4], 10),
-                        parseInt(l[5], 10)]);
-                }
-            });
-            resolve(index);
-        })
+        var index = [];
+        var compressed = new Uint8Array(craiBuffer);
+        var gunzip = new Zlib.Gunzip(compressed);
+        const plain = gunzip.decompress();
+        const plaintext = String.fromCharCode.apply("", plain);
+        const lines = plaintext.split('\n');
+        lines.forEach((line) => {
+            const l = line.split('\t');
+            if (l.length == 6) {
+                index.push([
+                    parseInt(l[0], 10),
+                    parseInt(l[1], 10),
+                    parseInt(l[2], 10),
+                    parseInt(l[3], 10),
+                    parseInt(l[4], 10),
+                    parseInt(l[5], 10)]);
+            }
+        });
+        return index;
     }
 
     parseSamHeader(txt) {
