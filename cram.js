@@ -6,18 +6,18 @@ class Cram {
             this.crai = craiFile;
             this.loadCraiFile();
             this.cram.seek(6);
-            this.fileid = new Uint8Array(this.cram.read(20));
+            this.cram.read(20).then((buf) => {this.fileid = new Uint8Array(buf)});
         } else {
             console.error("Passed file is not a cram 3.0 file.");
         }
     }
 
-    createChrNameList() {
+    async createChrNameList() {
         if (typeof this.chrName !== 'undefined') {
             return;
         }
         this.chrName = [];
-        this.getSamHeader();
+        await this.getSamHeader();
         this.samHeader.forEach((l) => {
             if (l[0] == '@SQ') {
                 this.chrName.push(l[1].get('SN'));
@@ -25,11 +25,11 @@ class Cram {
         });
     }
 
-    getRecords(chrName, start, end) {
+    async getRecords(chrName, start, end) {
         var result = [];
         // translate from chrName to reference sequence id
         if (typeof this.chrName === 'undefined') {
-            this.createChrNameList();
+            await this.createChrNameList();
         }
         const id = this.chrName.indexOf(chrName);
         // find slices by id, start and end
@@ -50,21 +50,22 @@ class Cram {
         return result;
     }
 
-    getSamHeader() {
+    async getSamHeader() {
         if (typeof this.samHeader !== 'undefined') {
             return;
         }
         var c = new CramContainer(this.cram, 26);
-        var b = this.cram.readBlock(c.pos + c.headerLength);
+        var b = await this.cram.readBlock(c.pos + c.headerLength);
         var t = String.fromCharCode.apply("", new Uint8Array(b.get("data")));
         this.samHeader = this.parseSamHeader(t);
     }
 
-    isCram30File() {
+    async isCram30File() {
         this.cram.seek(0);
-        var buf = this.cram.read(4);
+        var buf = await this.cram.read(4);
         var head = String.fromCharCode.apply("", new Uint8Array(buf));
-        var version = new Uint8Array(this.cram.read(2));
+        buf = await this.cram.read(2);
+        var version = new Uint8Array(buf);
         return head === 'CRAM' && version[0] == 3 && version[1] == 0;
     }
 

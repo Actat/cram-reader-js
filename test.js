@@ -10,9 +10,10 @@ function test() {
     console.log(cram);
     console.log(crai);
     var c = new Cram(cram, crai, true);
-    const result = c.getRecords(chr, start, end);
-    result.forEach(r => {
-        console.log(r);
+    c.getRecords(chr, start, end).then((reads) => {
+        reads.forEach(r => {
+            console.log(r);
+        })
+        console.log("finished.");
     });
-    console.log("finished.");
 }

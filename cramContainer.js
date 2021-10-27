@@ -23,11 +23,11 @@ class CramContainer {
         return d
     }
 
-    getCompressionHeaderBlock() {
+    async getCompressionHeaderBlock() {
         if (typeof this.compressionHeaderBlock !== 'undefined') {
             return this.compressionHeaderBlock;
         }
-        var b = this.cram.readBlock(this.pos + this.headerLength);
+        var b = await this.cram.readBlock(this.pos + this.headerLength);
         var chb = new Map();
         const data = new CramFile(b.get('data'));
         // preservation map
@@ -36,17 +36,17 @@ class CramContainer {
             chb.get('pm').set('RN', true);
             chb.get('pm').set('AP', true);
             chb.get('pm').set('RR', true);
-            const size = data.readItf8();
-            const number = data.readItf8();
+            const size = await data.readItf8();
+            const number = await data.readItf8();
             for (var i = 0; i < number; i++) {
-                const k = String.fromCharCode.apply("", new Uint8Array(data.read(2)));
+                const k = String.fromCharCode.apply("", new Uint8Array(await data.read(2)));
                 var v;
                 if (k == 'RN' || k == 'AP' || k == 'RR') {
-                    v = data.readBoolean();
+                    v = await data.readBoolean();
                 } else if (k == 'SM') {
-                    v = data.read(5);
+                    v = await data.read(5);
                 } else if (k == 'TD') {
-                    v = this.decodeTagDictionary(data.readArrayByte());
+                    v = this.decodeTagDictionary(await data.readArrayByte());
                 } else {
                     continue;
                 }
@@ -56,18 +56,18 @@ class CramContainer {
         // data series encodings
         {
             chb.set('dse', new Map());
-            const size = data.readItf8();
-            const number = data.readItf8();
+            const size = await data.readItf8();
+            const number = await data.readItf8();
             for (var i = 0; i < number; i++) {
-                const k = String.fromCharCode.apply("", new Uint8Array(data.read(2)));
+                const k = String.fromCharCode.apply("", new Uint8Array(await data.read(2)));
                 var v;
                 if (['BF', 'CF', 'RI', 'RL', 'AP', 'RG', 'MF', 'NS', 'NP', 'TS'
                     , 'NF', 'TL', 'FN', 'FP', 'DL', 'RS', 'PD', 'HC', 'MQ'].includes(k)) {
-                    v = data.readEncodingInt();
+                    v = await data.readEncodingInt();
                 } else if (['RN', 'BB', 'QQ', 'IN', 'SC'].includes(k)) {
-                    v = data.readEncodingByteArray();
+                    v = await data.readEncodingByteArray();
                 } else if (['FC', 'BS', 'BA', 'QS'].includes(k)) {
-                    v = data.readEncodingByte();
+                    v = await data.readEncodingByte();
                 } else{
                     continue;
                 }
@@ -77,12 +77,12 @@ class CramContainer {
         // tag encoding map
         {
             chb.set('tv', new Map());
-            const size = data.readItf8();
-            const number = data.readItf8();
+            const size = await data.readItf8();
+            const number = await data.readItf8();
             for (var i = 0; i < number; i++) {
-                const k = data.readItf8();
+                const k = await data.readItf8();
                 const key = String.fromCharCode((k & 0xff0000) >> 16, (k & 0xff00) >> 8, k & 0xff);
-                const v = data.readEncodingByteArray();
+                const v = await data.readEncodingByteArray();
                 chb.get('tv').set(key, v);
             }
         }
@@ -91,18 +91,18 @@ class CramContainer {
         return this.compressionHeaderBlock;
     }
 
-    readHeader() {
+    async readHeader() {
         this.cram.seek(this.pos);
-        this.length = this.cram.readInt32();
-        this.refSeqId = this.cram.readItf8();
-        this.startingRefPos = this.cram.readItf8();
-        this.alignmentSpan = this.cram.readItf8();
-        this.numberOfRecords = this.cram.readItf8();
-        this.recordCounter = this.cram.readLtf8();
-        this.bases = this.cram.readLtf8();
-        this.numberOfBlocks = this.cram.readItf8();
-        this.landmarks = this.cram.readArrayItf8();
-        this.crc32 = this.cram.readUint32();
-        this.headerLength = this.cram.tell() - this.pos;
+        this.length = await this.cram.readInt32();
+        this.refSeqId = await this.cram.readItf8();
+        this.startingRefPos = await this.cram.readItf8();
+        this.alignmentSpan = await this.cram.readItf8();
+        this.numberOfRecords = await this.cram.readItf8();
+        this.recordCounter = await this.cram.readLtf8();
+        this.bases = await this.cram.readLtf8();
+        this.numberOfBlocks = await this.cram.readItf8();
+        this.landmarks = await this.cram.readArrayItf8();
+        this.crc32 = await this.cram.readUint32();
+        this.headerLength = await this.cram.tell() - this.pos;
     }
 }

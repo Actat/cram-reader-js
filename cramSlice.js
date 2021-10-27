@@ -4,30 +4,30 @@ class CramSlice {
         this.offset = offset
     }
 
-    decodePositions(r) {
+    async decodePositions(r) {
         if (this.sliceHeaderBlock.get('content').get('refSeqId') == -2) {
-            r.refSeqId = this.readItem('RI', 'Int');
+            r.refSeqId = await this.readItem('RI', 'Int');
         } else {
             r.refSeqId = this.sliceHeaderBlock.get('content').get('refSeqid');
         }
-        r.readLength = this.readItem('RL', 'Int');
+        r.readLength = await this.readItem('RL', 'Int');
         if (this.container.compressionHeaderBlock.get('content').get('pm').get('AP') != 0) {
             if (typeof this.last_position == 'undefined') {
                 this.last_position = this.sliceHeaderBlock.get('content').get('alignmentStart');
             }
-            var p = this.readItem('AP', 'Int');
+            var p = await this.readItem('AP', 'Int');
             r.position = p + this.last_position;
             this.last_position = r.position;
         } else {
-            var p = this.readItem('AP', 'Int');
+            var p = await this.readItem('AP', 'Int');
             r.position = p;
         }
-        r.readGroup = this.readItem('RG', 'Int');
+        r.readGroup = await this.readItem('RG', 'Int');
     }
 
-    decodeNames(r) {
+    async decodeNames(r) {
         if (this.container.compressionHeaderBlock.get('content').get('pm').get('RN')) {
-            var rn = this.readItem('RN', 'ByteArray');
+            var rn = await this.readItem('RN', 'ByteArray');
             var name = "";
             rn.forEach(elem => {
                 name += String.fromCharCode(elem);
@@ -38,10 +38,10 @@ class CramSlice {
         }
     }
 
-    decodeMateData(r) {
+    async decodeMateData(r) {
         if ((r.cf & 2) == 2) {
             // the next fragment is not in the current slice
-            const mateFlag = this.readItem('MF', 'Int');
+            const mateFlag = await this.readItem('MF', 'Int');
             if ((mateFlag & 1) == 1) {
                 r.bf = r.bf | 0x20
             }
@@ -49,14 +49,14 @@ class CramSlice {
                 r.bf = r.bf | 0x08
             }
             if (this.container.compressionHeaderBlock.get('content').get('pm').get('RN') == false) {
-                rn = this.readItem('RN', 'ByteArray');
+                rn = await this.readItem('RN', 'ByteArray');
                 r.readName = String(rn);
             }
-            r.mateRefId = this.readItem('NS', 'Int');
-            r.matePos = this.readItem('NP', 'Int');
-            r.templateSize = this.readItem('TS', 'Int');
+            r.mateRefId = await this.readItem('NS', 'Int');
+            r.matePos = await this.readItem('NP', 'Int');
+            r.templateSize = await this.readItem('TS', 'Int');
         } else if ((r.cf & 4) == 4) {
-            r.nextFrag = this.readItem('NF', 'Int');
+            r.nextFrag = await this.readItem('NF', 'Int');
         }
     }
 
@@ -105,8 +105,8 @@ class CramSlice {
         }
     }
 
-    decodeTagData(r) {
-        const tagLine = this.readItem('TL', 'Int');
+    async decodeTagData(r) {
+        const tagLine = await this.readItem('TL', 'Int');
         var tags = {};
         this.container.compressionHeaderBlock.get('content').get('pm').get('TD')[tagLine].forEach(elm => {
             var name = elm.slice(0, 2);
@@ -133,55 +133,55 @@ class CramSlice {
         r.tags = tags;
     }
 
-    decodeMappedRead(r) {
-        const featureNumber = this.readItem('FN', 'Int');
+    async decodeMappedRead(r) {
+        const featureNumber = await this.readItem('FN', 'Int');
         for (var i = 0; i < featureNumber; i++) {
             this.decodeFeature(r);
         }
-        r.mappingQuality = this.readItem('MQ', 'Int');
+        r.mappingQuality = await this.readItem('MQ', 'Int');
         if (this.container.compressionHeaderBlock.get('content').get('dse').has('QS')) {
             r.qualityScore = this.readQualityScore(r.readLength);
         }
     }
 
-    decodeFeature(r) {
+    async decodeFeature(r) {
         var f = new Map();
         f.set('FC', String.fromCharCode.apply("", new Uint8Array(this.readItem('FC', 'Byte'))));
-        f.set('FP', this.readItem('FP', 'Int'));
+        f.set('FP', await this.readItem('FP', 'Int'));
         if (f.get('FC') == 'B') {
-            f.set('BA', this.readItem('BA', 'Byte'));
-            f.set('QS', this.readItem('QS', 'Byte'));
+            f.set('BA', await this.readItem('BA', 'Byte'));
+            f.set('QS', await this.readItem('QS', 'Byte'));
         } else if (f.get('FC') == 'X') {
-            f.set('BS', this.readItem('BS', 'Byte'));
+            f.set('BS', await this.readItem('BS', 'Byte'));
         } else if (f.get('FC') == 'I') {
-            f.set('IN', this.readItem('IN', 'ByteArray'));
+            f.set('IN', await this.readItem('IN', 'ByteArray'));
         } else if (f.get('FC') == 'S') {
-            f.set('SC', this.readItem('SC', 'ByteArray'));
+            f.set('SC', await this.readItem('SC', 'ByteArray'));
         } else if (f.get('FC') == 'H') {
-            f.set('HC', this.readItem('HC', 'Int'));
+            f.set('HC', await this.readItem('HC', 'Int'));
         } else if (f.get('FC') == 'P') {
-            f.set('PD', this.readItem('PD', 'Int'));
+            f.set('PD', await this.readItem('PD', 'Int'));
         } else if (f.get('FC') == 'D') {
-            f.set('DL', this.readItem('DL', 'Int'));
+            f.set('DL', await this.readItem('DL', 'Int'));
         } else if (f.get('FC') == 'N') {
-            f.set('RS', this.readItem('RS', 'Int'));
+            f.set('RS', await this.readItem('RS', 'Int'));
         } else if (f.get('FC') == 'i') {
-            f.set('BA', this.readItem('BA', 'Byte'));
+            f.set('BA', await this.readItem('BA', 'Byte'));
         } else if (f.get('FC') == 'b') {
-            f.set('BB', this.readItem('BB', 'ByteArray'));
+            f.set('BB', await this.readItem('BB', 'ByteArray'));
         } else if (f.get('FC') == 'q') {
-            f.set('QQ', this.readItem('QQ', 'ByteArray'));
+            f.set('QQ', await this.readItem('QQ', 'ByteArray'));
         } else if (f.get('FC') == 'Q') {
-            f.set('QS', this.readItem('QS', 'Byte'));
+            f.set('QS', await this.readItem('QS', 'Byte'));
         }
         r.features.push(f);
         r.sortFeatures();
     }
 
-    decodeUnmappedRead(r) {
+    async decodeUnmappedRead(r) {
         b = new Array(r.readLength);
         for (var i = 0; i < r.readLength; i++) {
-            b[i] = this.readItem('BA', 'Byte');
+            b[i] = await this.readItem('BA', 'Byte');
         }
         r.base = b;
         if (this.container.compressionHeaderBlock.get('content').get('dse').has('QS')) {
@@ -194,13 +194,13 @@ class CramSlice {
         return generatedName;
     }
 
-    getBlockByExternalId(id) {
-        this.getSliceHeaderBlock();
+    async getBlockByExternalId(id) {
+        await this.getSliceHeaderBlock();
         var index = this.sliceHeaderBlock.get('content').get('blockContentIds').indexOf(id)
         return this.blocks[index + 1] // +1 for core data block
     }
 
-    getBlocks() {
+    async getBlocks() {
         if (typeof this.blocks == 'undefined') {
             this.blocks = [];
             this.container.cram.seek(
@@ -218,24 +218,24 @@ class CramSlice {
         return this.blocks;
     }
 
-    getRecords() {
-        this.container.getCompressionHeaderBlock();
-        this.getSliceHeaderBlock();
-        this.getBlocks();
+    async getRecords() {
+        await this.container.getCompressionHeaderBlock();
+        await this.getSliceHeaderBlock();
+        await this.getBlocks();
         this.blocks[0].set('IO', new BitsIO(this.blocks[0].get('data')));
         var records = [];
         for (var i = 0; i < this.sliceHeaderBlock.get('content').get('numberOfRecords'); i++) {
-            var bf = this.readItem('BF', 'Int');
-            var cf = this.readItem('CF', 'Int');
+            var bf = await this.readItem('BF', 'Int');
+            var cf = await this.readItem('CF', 'Int');
             var r = new CramRecord(bf, cf);
-            this.decodePositions(r);
-            this.decodeNames(r);
-            this.decodeMateData(r);
-            this.decodeTagData(r);
+            await this.decodePositions(r);
+            await this.decodeNames(r);
+            await this.decodeMateData(r);
+            await this.decodeTagData(r);
             if ((r.bf & 4) == 0) {
-                this.decodeMappedRead(r);
+                await this.decodeMappedRead(r);
             } else {
-                this.decodeUnmappedRead(r);
+                await this.decodeUnmappedRead(r);
             }
             records.push(r);
         }
@@ -243,11 +243,11 @@ class CramSlice {
         return records;
     }
 
-    getSliceHeaderBlock() {
+    async getSliceHeaderBlock() {
         if (typeof this.sliceHeaderBlock != 'undefined') {
             return this.sliceHeaderBlock;
         }
-        var b = this.container.cram.readBlock(this.container.pos + this.container.headerLength + this.offset);
+        var b = await this.container.cram.readBlock(this.container.pos + this.container.headerLength + this.offset);
         var data = new CramFile(b.get('data'));
         b.set('content', new Map());
         b.get('content').set('refSeqId', data.readItf8());
@@ -267,16 +267,16 @@ class CramSlice {
     readQualityScore(readLength) {
         var qs = new Array(readLength);
         for (var i = 0; i < readLength; i++) {
-            qs[i] = this.readItem('QS', 'Int') + 33; // +33 to match chr with samtools
+            qs[i] = await this.readItem('QS', 'Int') + 33; // +33 to match chr with samtools
         }
         return String.fromCharCode.apply("", qs);
     }
 
-    readItem(key, type = 'Byte') {
-        return this.decodeItem(this.container.compressionHeaderBlock.get('content').get('dse').get(key), type);
+    async readItem(key, type = 'Byte') {
+        return await this.decodeItem(this.container.compressionHeaderBlock.get('content').get('dse').get(key), type);
     }
 
-    decodeItem(codec, type) {
+    async decodeItem(codec, type) {
         const codecId = codec.get('codecId');
         var io;
         if (codecId == 1) {
