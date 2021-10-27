@@ -2,15 +2,7 @@ class Cram {
     constructor(cramFile, craiFile, localFlag) {
         this.localFlag = localFlag;
         this.cram = new CramFile(cramFile, localFlag);
-        if (this.isCram30File()) {
-            this.crai = craiFile;
-            this.index = this.loadCraiFile();
-            this.chrName = this.createChrNameList();
-            this.cram.seek(6);
-            this.cram.read(20).then((buf) => {this.fileid = new Uint8Array(buf)});
-        } else {
-            console.error("Passed file is not a cram 3.0 file.");
-        }
+        this.crai = craiFile;
     }
 
     async createChrNameList() {
@@ -27,16 +19,18 @@ class Cram {
         return chrName;
     }
 
-    getRecords(chrName, start, end) {
-        return new Promise((resolve, reject) => {
-            Promise.all([this.index, this.chrName]).then((values) => {
-                const index = values[0];
-                const chrNameList = values[1];
+    async getRecords(chrName, start, end) {
+        return new Promise(async (resolve, reject) => {
+            if (this.isCram30File()) {
+                this.index = await this.loadCraiFile();
+                this.chrName = await this.createChrNameList();
+                this.cram.seek(6);
+                this.fileid = new Uint8Array(await this.cram.read(20));
                 var result = [];
                 // translate from chrName to reference sequence id
-                const id = chrNameList.indexOf(chrName);
+                const id = this.chrName.indexOf(chrName);
                 // find slices by id, start and end
-                index.forEach((s) => {
+                this.index.forEach((s) => {
                     if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
                         // find records in the slice
                         const container = new CramContainer(this.cram, s[3]);
@@ -51,7 +45,9 @@ class Cram {
                     }
                 });
                 resolve(result);
-            });
+            } else {
+                reject("The file is not cram 3.0 file.");
+            }
         });
     }
 
