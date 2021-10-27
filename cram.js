@@ -73,7 +73,7 @@ class Cram {
         if (typeof this.index !== 'undefined') {
             return;
         }
-        const craiBuffer = await this.crai.ArrayBuffer();
+        const craiBuffer = await this.crai.arrayBuffer();
         this.index = [];
         var compressed = new Uint8Array(craiBuffer);
         var gunzip = new Zlib.Gunzip(compressed);
