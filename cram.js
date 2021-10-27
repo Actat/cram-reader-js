@@ -29,12 +29,14 @@ class Cram {
 
     getRecords(chrName, start, end) {
         return new Promise((resolve, reject) => {
-            Promise.all([this.index, this.chrName]).then(() => {
+            Promise.all([this.index, this.chrName]).then((values) => {
+                const index = values[0];
+                const chrNameList = values[1];
                 var result = [];
                 // translate from chrName to reference sequence id
-                const id = this.chrName.indexOf(chrName);
+                const id = chrNameList.indexOf(chrName);
                 // find slices by id, start and end
-                this.index.forEach((s) => {
+                index.forEach((s) => {
                     if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
                         // find records in the slice
                         const container = new CramContainer(this.cram, s[3]);
