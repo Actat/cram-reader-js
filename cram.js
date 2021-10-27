@@ -31,8 +31,8 @@ class Cram {
     }
 
     getRecords(chrName, start, end) {
-        Promise.all([this.index, this.chrName]).then(() => {
-            return new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
+            Promise.all([this.index, this.chrName]).then(() => {
                 var result = [];
                 // translate from chrName to reference sequence id
                 const id = this.chrName.indexOf(chrName);
