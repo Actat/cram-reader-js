@@ -22,6 +22,7 @@ class SeekableArrayBuffer {
             return sliced.arrayBuffer();
         } else {
             const promise = new Promise((resolve, reject) => resolve(sliced));
+            return promise;
         }
     }
 
