@@ -1,7 +1,7 @@
 class SeekableArrayBuffer {
 
     constructor(arrBuf, localFlag) {
-        // When localFlag is True, arrBuf is File (Web API)
+        // When localFlag is True, arrBuf is File (Web API) or blob.
         this.arrBuf = arrBuf;
         this.localFlag = localFlag;
         this.index = 0;
