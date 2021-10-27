@@ -5,6 +5,7 @@ class Cram {
         if (this.isCram30File()) {
             this.crai = craiFile;
             this.loadCraiFile();
+            this.createChrNameList();
             this.cram.seek(6);
             this.cram.read(20).then((buf) => {this.fileid = new Uint8Array(buf)});
         } else {
@@ -16,25 +17,26 @@ class Cram {
         if (typeof this.chrName !== 'undefined') {
             return;
         }
-        this.chrName = [];
-        await this.getSamHeader();
-        this.samHeader.forEach((l) => {
-            if (l[0] == '@SQ') {
-                this.chrName.push(l[1].get('SN'));
-            }
+        this.chrName = new Promise((resolve, reject) => {
+            var chrName = [];
+            await this.getSamHeader();
+            this.samHeader.forEach((l) => {
+                if (l[0] == '@SQ') {
+                    chrName.push(l[1].get('SN'));
+                }
+            });
+            resolve(chrName);
         });
     }
 
     async getRecords(chrName, start, end) {
         var result = [];
-        // translate from chrName to reference sequence id
-        if (typeof this.chrName === 'undefined') {
-            await this.createChrNameList();
-        }
-        const id = this.chrName.indexOf(chrName);
         // find slices by id, start and end
-        this.index.then((index) => {
-            index.forEach((s) => {
+        Promise.all([this.index, this.chrName]).then(() => {
+            // translate from chrName to reference sequence id
+            const id = this.chrName.indexOf(chrName);
+            // find slices by id, start and end
+            this.index.forEach((s) => {
                 if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
                     // find records in the slice
                     const container = new CramContainer(this.cram, s[3]);
