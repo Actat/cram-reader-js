@@ -1,9 +1,7 @@
 class SeekableArrayBuffer {
 
-    constructor(arrBuf, localFlag) {
-        // When localFlag is True, arrBuf is File (Web API)
+    constructor(arrBuf) {
         this.arrBuf = arrBuf;
-        this.localFlag = localFlag;
         this.index = 0;
     }
 
@@ -18,14 +16,7 @@ class SeekableArrayBuffer {
     read(i) {
         const sliced = this.arrBuf.slice(this.index, this.index + i);
         this.index += i;
-        if(this.localFlag) {
-            const promise = sliced.arrayBuffer();
-            promise.then(buf => {
-                return buf;
-            });
-        } else {
-            return sliced;
-        }
+        return sliced;
     }
 
     readInt8() {

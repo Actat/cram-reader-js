@@ -1,15 +1,19 @@
 class Cram {
     constructor(cramFile, craiFile, localFlag) {
-        this.localFlag = localFlag;
-        this.cram = new CramFile(cramFile, localFlag);
-        if (this.isCram30File()) {
-            this.crai = craiFile;
-            this.loadCraiFile();
-            this.cram.seek(6);
-            this.fileid = new Uint8Array(this.cram.read(20));
-        } else {
-            console.error("Passed file is not a cram 3.0 file.");
-        }
+        cramFile.arrayBuffer().then(cramBuffer => {
+            craiFile.arrayBuffer().then(craiBuffer => {
+                this.localFlag = localFlag;
+                this.cram = new CramFile(cramBuffer);
+                if (this.isCram30File()) {
+                    this.crai = craiBuffer;
+                    this.loadCraiFile();
+                    this.cram.seek(6);
+                    this.fileid = new Uint8Array(this.cram.read(20));
+                } else {
+                    console.error("Passed file is not a cram 3.0 file.");
+                }
+            })
+        });
     }
 
     createChrNameList() {
@@ -68,13 +72,12 @@ class Cram {
         return head === 'CRAM' && version[0] == 3 && version[1] == 0;
     }
 
-    async loadCraiFile() {
+    loadCraiFile() {
         if (typeof this.index !== 'undefined') {
             return;
         }
-        const craiBuffer = await this.crai.ArrayBuffer();
         this.index = [];
-        var compressed = new Uint8Array(craiBuffer);
+        var compressed = new Uint8Array(this.crai);
         var gunzip = new Zlib.Gunzip(compressed);
         const plain = gunzip.decompress();
         const plaintext = String.fromCharCode.apply("", plain);
