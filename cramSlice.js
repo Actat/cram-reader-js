@@ -140,7 +140,7 @@ class CramSlice {
         }
         r.mappingQuality = await this.readItem('MQ', 'Int');
         if (this.container.compressionHeaderBlock.get('content').get('dse').has('QS')) {
-            r.qualityScore = this.readQualityScore(r.readLength);
+            r.qualityScore = await this.readQualityScore(r.readLength);
         }
     }
 
@@ -185,7 +185,7 @@ class CramSlice {
         }
         r.base = b;
         if (this.container.compressionHeaderBlock.get('content').get('dse').has('QS')) {
-            r.qualityScore = this.readQualityScore(r.readLength);
+            r.qualityScore = await this.readQualityScore(r.readLength);
         }
     }
 
@@ -264,10 +264,10 @@ class CramSlice {
         return this.sliceHeaderBlock;
     }
 
-    readQualityScore(readLength) {
+    async readQualityScore(readLength) {
         var qs = new Array(readLength);
         for (var i = 0; i < readLength; i++) {
-            qs[i] = await this.readItem('QS', 'Int') + 33; // +33 to match chr with samtools
+            qs[i] = (await this.readItem('QS', 'Int')) + 33; // +33 to match chr with samtools
         }
         return String.fromCharCode.apply("", qs);
     }
