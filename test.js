@@ -9,14 +9,10 @@ function test() {
     console.log(end)
     console.log(cram);
     console.log(crai);
-    cram.arrayBuffer().then(crambuffer => {
-        crai.arrayBuffer().then(craibuffer => {
-            var c = new Cram(cram, crai, true);
-            const  result = c.getRecords(chr, start, end);
-            result.forEach(r => {
-                console.log(r);
-            });
-            console.log("finished.");
-        });
+    var c = new Cram(cram, crai, true);
+    const  result = c.getRecords(chr, start, end);
+    result.forEach(r => {
+        console.log(r);
     });
+    console.log("finished.");
 }
