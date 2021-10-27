@@ -19,12 +19,9 @@ class SeekableArrayBuffer {
         const sliced = this.arrBuf.slice(this.index, this.index + i);
         this.index += i;
         if(this.localFlag) {
-            const promise = sliced.arrayBuffer();
-            promise.then(buf => {
-                return buf;
-            });
+            return sliced.arrayBuffer();
         } else {
-            return sliced;
+            const promise = new Promise((resolve, reject) => resolve(sliced));
         }
     }
 
