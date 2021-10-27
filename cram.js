@@ -74,24 +74,27 @@ class Cram {
             return;
         }
         const craiBuffer = await this.crai.arrayBuffer();
-        this.index = [];
-        var compressed = new Uint8Array(craiBuffer);
-        var gunzip = new Zlib.Gunzip(compressed);
-        const plain = gunzip.decompress();
-        const plaintext = String.fromCharCode.apply("", plain);
-        const lines = plaintext.split('\n');
-        lines.forEach((line) => {
-            const l = line.split('\t');
-            if (l.length == 6) {
-                this.index.push([
-                    parseInt(l[0], 10),
-                    parseInt(l[1], 10),
-                    parseInt(l[2], 10),
-                    parseInt(l[3], 10),
-                    parseInt(l[4], 10),
-                    parseInt(l[5], 10)]);
-            }
-        });
+        this.index = new Promise((resolve, reject) => {
+            var index = [];
+            var compressed = new Uint8Array(craiBuffer);
+            var gunzip = new Zlib.Gunzip(compressed);
+            const plain = gunzip.decompress();
+            const plaintext = String.fromCharCode.apply("", plain);
+            const lines = plaintext.split('\n');
+            lines.forEach((line) => {
+                const l = line.split('\t');
+                if (l.length == 6) {
+                    index.push([
+                        parseInt(l[0], 10),
+                        parseInt(l[1], 10),
+                        parseInt(l[2], 10),
+                        parseInt(l[3], 10),
+                        parseInt(l[4], 10),
+                        parseInt(l[5], 10)]);
+                }
+            });
+            resolve(index);
+        })
     }
 
     parseSamHeader(txt) {
