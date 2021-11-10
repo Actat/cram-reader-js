@@ -285,7 +285,7 @@ class CramSlice {
         var io;
         if (codecId == 1) {
             // return int or arrayBuffer
-            io = this.getBlockByExternalId(codec.get('externalId')).get('IO');
+            io = (await this.getBlockByExternalId(codec.get('externalId'))).get('IO');
             if (type == 'Int') {
                 return io.readItf8();
             } else if (type == 'Byte') {
@@ -306,7 +306,7 @@ class CramSlice {
         } else if (codecId == 5) {
             // BYTE_ARRAY_STOP
             // return array
-            io = this.getBlockByExternalId(codec.get('externalId')).get('IO');
+            io = (await this.getBlockByExternalId(codec.get('externalId'))).get('IO');
             var a = [];
             var cf = new CramFile(codec.get('stopByte'));
             const stopByte = cf.readUint8();
