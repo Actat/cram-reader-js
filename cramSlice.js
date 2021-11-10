@@ -208,7 +208,8 @@ class CramSlice {
                 + this.container.headerLength
                 + this.offset
                 + this.sliceHeaderBlock.get('blockSize'));
-            for (var i = 0; i < this.sliceHeaderBlock.get('content').get('blockContentIds').length + 1; i++) {
+            const numberOfBlocks = (await this.sliceHeaderBlock.get('content').get('blockContentIds')).length;
+            for (var i = 0; i < numberOfBlocks + 1; i++) {
                 // +1 for core data block
                 var b = await this.container.cram.readBlock();
                 b.set('IO', new CramFile(b.get('data')));
@@ -226,7 +227,8 @@ class CramSlice {
         await this.getBlocks();
         this.blocks[0].set('IO', new BitsIO(this.blocks[0].get('data')));
         var records = [];
-        for (var i = 0; i < this.sliceHeaderBlock.get('content').get('numberOfRecords'); i++) {
+        const numberOfRecords = await this.sliceHeaderBlock.get('content').get('numberOfRecords');
+        for (var i = 0; i < numberOfRecords; i++) {
             var bf = await this.readItem('BF', 'Int');
             var cf = await this.readItem('CF', 'Int');
             var r = new CramRecord(bf, cf);
