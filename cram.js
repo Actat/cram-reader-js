@@ -34,6 +34,7 @@ class Cram {
                     if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
                         // find records in the slice
                         const container = new CramContainer(this.cram, s[3]);
+                        await container.readHeader();
                         const cramSlice = new CramSlice(container, s[4]);
                         const records = cramSlice.getRecords();
                         records.forEach((r) => {
@@ -56,6 +57,7 @@ class Cram {
             return;
         }
         var c = new CramContainer(this.cram, 26);
+        await c.readHeader();
         var b = await this.cram.readBlock(c.pos + c.headerLength);
         var t = String.fromCharCode.apply("", new Uint8Array(b.get("data")));
         return this.parseSamHeader(t);

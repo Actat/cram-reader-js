@@ -2,7 +2,6 @@ class CramContainer {
     constructor(cram, pos) {
         this.cram = cram;
         this.pos = pos;
-        this.readHeader();
     }
 
     decodeTagDictionary(arrBuf){
