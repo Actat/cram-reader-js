@@ -219,6 +219,7 @@ class CramSlice {
     }
 
     async getRecords() {
+        await this.container.readHeader();
         await this.container.getCompressionHeaderBlock();
         await this.getSliceHeaderBlock();
         await this.getBlocks();
