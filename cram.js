@@ -34,7 +34,6 @@ class Cram {
                     if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
                         // find records in the slice
                         const container = new CramContainer(this.cram, s[3]);
-                        await container.readHeader();
                         const cramSlice = new CramSlice(container, s[4]);
                         const records = cramSlice.getRecords();
                         records.forEach((r) => {
