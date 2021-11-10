@@ -30,12 +30,12 @@ class Cram {
                 // translate from chrName to reference sequence id
                 const id = this.chrName.indexOf(chrName);
                 // find slices by id, start and end
-                this.index.forEach((s) => {
+                this.index.forEach(async (s) => {
                     if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
                         // find records in the slice
                         const container = new CramContainer(this.cram, s[3]);
                         const cramSlice = new CramSlice(container, s[4]);
-                        const records = cramSlice.getRecords();
+                        const records = await cramSlice.getRecords();
                         records.forEach((r) => {
                             if (r.refSeqId == id && r.position <= end && r.position + r.readLength >= start) {
                                 r.restoreCigar();
