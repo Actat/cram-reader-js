@@ -208,7 +208,7 @@ class CramSlice {
                 + this.container.headerLength
                 + this.offset
                 + this.sliceHeaderBlock.get('blockSize'));
-            const numberOfBlocks = (await this.sliceHeaderBlock.get('content').get('blockContentIds')).length;
+            const numberOfBlocks = this.sliceHeaderBlock.get('content').get('blockContentIds').length;
             for (var i = 0; i < numberOfBlocks + 1; i++) {
                 // +1 for core data block
                 var b = await this.container.cram.readBlock();
@@ -227,7 +227,7 @@ class CramSlice {
         await this.getBlocks();
         this.blocks[0].set('IO', new BitsIO(this.blocks[0].get('data')));
         var records = [];
-        const numberOfRecords = await this.sliceHeaderBlock.get('content').get('numberOfRecords');
+        const numberOfRecords = this.sliceHeaderBlock.get('content').get('numberOfRecords');
         for (var i = 0; i < numberOfRecords; i++) {
             var bf = await this.readItem('BF', 'Int');
             var cf = await this.readItem('CF', 'Int');
@@ -254,15 +254,15 @@ class CramSlice {
         var b = await this.container.cram.readBlock(this.container.pos + this.container.headerLength + this.offset);
         var data = new CramFile(b.get('data'));
         b.set('content', new Map());
-        b.get('content').set('refSeqId', data.readItf8());
-        b.get('content').set('alignmentStart', data.readItf8());
-        b.get('content').set('alignmentSpan', data.readItf8());
-        b.get('content').set('numberOfRecords', data.readItf8());
-        b.get('content').set('recordCounter', data.readItf8());
-        b.get('content').set('numberOfBlocks', data.readItf8());
-        b.get('content').set('blockContentIds', data.readArrayItf8());
-        b.get('content').set('embeddedRefBasesBlockContentId', data.readItf8());
-        b.get('content').set('refMD5', data.read(16));
+        b.get('content').set('refSeqId', await data.readItf8());
+        b.get('content').set('alignmentStart', await data.readItf8());
+        b.get('content').set('alignmentSpan', await data.readItf8());
+        b.get('content').set('numberOfRecords', await data.readItf8());
+        b.get('content').set('recordCounter', await data.readItf8());
+        b.get('content').set('numberOfBlocks', await data.readItf8());
+        b.get('content').set('blockContentIds', await data.readArrayItf8());
+        b.get('content').set('embeddedRefBasesBlockContentId', await data.readItf8());
+        b.get('content').set('refMD5', await data.read(16));
         //b.get('content').set('optionalTags', data.readArrayByte());
         this.sliceHeaderBlock = b;
         return this.sliceHeaderBlock;
