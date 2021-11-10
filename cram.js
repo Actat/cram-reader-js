@@ -20,34 +20,40 @@ class Cram {
     }
 
     async getRecords(chrName, start, end) {
-        return new Promise(async (resolve, reject) => {
-            if (this.isCram30File()) {
-                this.index = await this.loadCraiFile();
-                this.chrName = await this.createChrNameList();
-                this.cram.seek(6);
-                this.fileid = new Uint8Array(await this.cram.read(20));
-                var result = [];
-                // translate from chrName to reference sequence id
-                const id = this.chrName.indexOf(chrName);
-                // find slices by id, start and end
-                this.index.forEach(async (s) => {
-                    if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
-                        // find records in the slice
-                        const container = new CramContainer(this.cram, s[3]);
-                        const cramSlice = new CramSlice(container, s[4]);
-                        const records = await cramSlice.getRecords();
-                        records.forEach((r) => {
-                            if (r.refSeqId == id && r.position <= end && r.position + r.readLength >= start) {
-                                r.restoreCigar();
-                                result.push(r);
-                            }
-                        });
+        if (!(await this.isCram30File())) {
+            console.error("The file is not cram 3.0 file.");
+        }
+
+        this.index = await this.loadCraiFile();
+        this.chrName = await this.createChrNameList();
+        this.cram.seek(6);
+        this.fileid = new Uint8Array(await this.cram.read(20));
+        // translate from chrName to reference sequence id
+        const id = this.chrName.indexOf(chrName);
+        // find slices by id, start and end
+        const promises = [];
+        this.index.forEach((s) => {
+            if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
+                promises.push(new Promise((resolve) => {
+                    // find records in the slice
+                    const container = new CramContainer(this.cram, s[3]);
+                    const cramSlice = new CramSlice(container, s[4]);
+                    const records = await cramSlice.getRecords();
+                    resolve(records);
+                }))
+            }
+        });
+        return Promise.all(promises).then((results)=>{
+            const reads = [];
+            results.forEach((records) => {
+                records.forEach((r) => {
+                    if (r.refSeqId == id && r.position <= end && r.position + r.readLength >= start) {
+                        r.restoreCigar();
+                        reads.push(r);
                     }
                 });
-                resolve(result);
-            } else {
-                reject("The file is not cram 3.0 file.");
-            }
+            })
+            return reads;
         });
     }
 
