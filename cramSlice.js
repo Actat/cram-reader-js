@@ -202,7 +202,7 @@ class CramSlice {
 
     async getBlocks() {
         if (typeof this.blocks == 'undefined') {
-            this.blocks = [];
+            const blocks = [];
             this.container.cram.seek(
                 this.container.pos
                 + this.container.headerLength
@@ -212,8 +212,9 @@ class CramSlice {
                 // +1 for core data block
                 var b = this.container.cram.readBlock();
                 b.set('IO', new CramFile(b.get('data')));
-                this.blocks.push(b);
+                blocks.push(b);
             }
+            this.blocks = blocks;
         }
         return this.blocks;
     }
