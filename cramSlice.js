@@ -210,7 +210,7 @@ class CramSlice {
                 + this.sliceHeaderBlock.get('blockSize'));
             for (var i = 0; i < this.sliceHeaderBlock.get('content').get('blockContentIds').length + 1; i++) {
                 // +1 for core data block
-                var b = this.container.cram.readBlock();
+                var b = await this.container.cram.readBlock();
                 b.set('IO', new CramFile(b.get('data')));
                 blocks.push(b);
             }
