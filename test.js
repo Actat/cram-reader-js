@@ -1,9 +1,9 @@
 function testLocal() {
-    const chr = document.forms.form.chrnameLocal.value;
-    const start = document.forms.form.startLocal.value;
-    const end = document.forms.form.endLocal.value;
-    const cram = document.forms.form.cramLocal.files[0];
-    const crai = document.forms.form.craiLocal.files[0];
+    const chr = document.forms.formLocal.chrnameLocal.value;
+    const start = document.forms.formLocal.startLocal.value;
+    const end = document.forms.formLocal.endLocal.value;
+    const cram = document.forms.formLocal.cramLocal.files[0];
+    const crai = document.forms.formLocal.craiLocal.files[0];
     console.log(chr);
     console.log(start);
     console.log(end)
@@ -19,11 +19,11 @@ function testLocal() {
 }
 
 function testRemote() {
-    const chr = document.forms.form.chrnameRemote.value;
-    const start = document.forms.form.startRemote.value;
-    const end = document.forms.form.endRemote.value;
-    const cram = document.forms.form.cramRemote.files[0];
-    const crai = document.forms.form.craiRemote.files[0];
+    const chr = document.forms.formRemote.chrnameRemote.value;
+    const start = document.forms.formRemote.startRemote.value;
+    const end = document.forms.formRemote.endRemote.value;
+    const cram = document.forms.formRemote.cramRemote.files[0];
+    const crai = document.forms.formRemote.craiRemote.files[0];
     console.log(chr);
     console.log(start);
     console.log(end)
