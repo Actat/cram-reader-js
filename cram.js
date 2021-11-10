@@ -38,7 +38,7 @@ class Cram {
                     // find records in the slice
                     const container = new CramContainer(this.cram, s[3]);
                     const cramSlice = new CramSlice(container, s[4]);
-                    const records = await cramSlice.getRecords();
+                    const records = cramSlice.getRecords();
                     resolve(records);
                 }))
             }
