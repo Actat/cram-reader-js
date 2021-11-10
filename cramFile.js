@@ -201,7 +201,7 @@ class CramFile extends SeekableArrayBuffer {
         } else if (result.get("method") == 4) {
             // rans
             var cr = new CramRans(data);
-            result.set("data", cr.ransDecode());
+            result.set("data", await cr.ransDecode());
         }
         result.set('CRC32', await this.readUint32());
         result.set('blockSize', this.tell() - p);
