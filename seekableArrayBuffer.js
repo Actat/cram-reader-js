@@ -1,6 +1,6 @@
 class SeekableArrayBuffer {
 
-    constructor(arrBuf, blobFlag) {
+    constructor(arrBuf, blobFlag = false) {
         this.arrBuf = arrBuf;
         this.blobFlag = blobFlag;
         this.index = 0;

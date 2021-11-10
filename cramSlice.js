@@ -212,7 +212,7 @@ class CramSlice {
             for (var i = 0; i < numberOfBlocks + 1; i++) {
                 // +1 for core data block
                 var b = await this.container.cram.readBlock();
-                b.set('IO', new CramFile(b.get('data')));
+                b.set('IO', new CramFile(b.get('data'), false));
                 blocks.push(b);
             }
             this.blocks = blocks;
@@ -252,7 +252,7 @@ class CramSlice {
             return this.sliceHeaderBlock;
         }
         var b = await this.container.cram.readBlock(this.container.pos + this.container.headerLength + this.offset);
-        var data = new CramFile(b.get('data'));
+        var data = new CramFile(b.get('data'), false);
         b.set('content', new Map());
         b.get('content').set('refSeqId', await data.readItf8());
         b.get('content').set('alignmentStart', await data.readItf8());
@@ -308,7 +308,7 @@ class CramSlice {
             // return array
             io = (await this.getBlockByExternalId(codec.get('externalId'))).get('IO');
             var a = [];
-            var cf = new CramFile(codec.get('stopByte'));
+            var cf = new CramFile(codec.get('stopByte'), false);
             const stopByte = cf.readUint8();
             while (true) {
                 var c = io.readUint8();

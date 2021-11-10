@@ -1,6 +1,6 @@
 class CramRans {
     constructor(input) {
-        this.input = new CramFile(input);
+        this.input = new CramFile(input, false);
     }
 
     async ransDecode() {

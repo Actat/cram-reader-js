@@ -206,7 +206,7 @@ class CramFile extends SeekableArrayBuffer {
         result.set('CRC32', await this.readUint32());
         result.set('blockSize', this.tell() - p);
         if (result.has('data')) {
-            result.set("IO", new CramFile(result.get('data')));
+            result.set("IO", new CramFile(result.get('data'), false));
         }
         return result
     }
