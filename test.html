@@ -15,33 +15,68 @@
     <script src="test.js"></script>
   </head>
   <body>
-    <form id="form">
-      <table>
-        <tr>
-          <th>chr name</th>
-          <td><input id="chrname" value="chr22"></td>
-        </tr>
-        <tr>
-          <th>start</th>
-          <td><input id="start" value="50199000"></td>
-        </tr>
-        <tr>
-          <th>end</th>
-          <td><input id="end" value="50200000"></td>
-        </tr>
-        <tr>
-          <th>cram</th>
-          <td><input type="file" id="cram" accept=".cram"></td>
-        </tr>
-        <tr>
-          <th>crai</th>
-          <td><input type="file" id="crai" accept=".crai"></td>
-        </tr>
-        <tr>
-          <th></th>
-          <td><input type="button" value="Go" onclick="test()"></td>
-        </tr>
-      </table>
-    </form>
+    <div id="local">
+      <form id="formLocal">
+        <table>
+          <tr>
+            <th>chr name</th>
+            <td><input id="chrnameLocal" value="chr22"></td>
+          </tr>
+          <tr>
+            <th>start</th>
+            <td><input id="startLocal" value="50199000"></td>
+          </tr>
+          <tr>
+            <th>end</th>
+            <td><input id="endLocal" value="50200000"></td>
+          </tr>
+          <tr>
+            <th>cram</th>
+            <td><input type="fileLocal" id="cram" accept=".cram"></td>
+          </tr>
+          <tr>
+            <th>crai</th>
+            <td><input type="fileLocal" id="crai" accept=".crai"></td>
+          </tr>
+          <tr>
+            <th></th>
+            <td><input type="buttonLocal" value="Go" onclick="testLocal()"></td>
+          </tr>
+        </table>
+      </form>
+    </div>
+    <div id="remote">
+      <form id="formRemote">
+        <table>
+          <tr>
+            <th>chr name</th>
+            <td><input id="chrnameRemote" value="chr22"></td>
+          </tr>
+          <tr>
+            <th>start</th>
+            <td><input id="startRemote" value="50199000"></td>
+          </tr>
+          <tr>
+            <th>end</th>
+            <td><input id="endRemote" value="50200000"></td>
+          </tr>
+          <tr>
+            <th>cram</th>
+            <td><input type="fileRemote" id="cram" accept=".cram"></td>
+          </tr>
+          <tr>
+            <th>crai</th>
+            <td><input type="fileRemote" id="crai" accept=".crai"></td>
+          </tr>
+          <tr>
+            <th></th>
+            <td><input type="buttonRemote" value="Go" onclick="testRemote()"></td>
+          </tr>
+        </table>
+      </form>
+    </div>
+    <div id="state">
+      waiting...
+    </div>
   </body>
 </html>
