@@ -108,7 +108,7 @@ class CramSlice {
     async decodeTagData(r) {
         const tagLine = await this.readItem('TL', 'Int');
         var tags = {};
-        this.container.compressionHeaderBlock.get('content').get('pm').get('TD')[tagLine].forEach(elm => {
+        const readTagFunc = async (elm) => {
             var name = elm.slice(0, 2);
             const tagType = elm.slice(-1);
             var tagValue;
@@ -128,8 +128,9 @@ class CramSlice {
                 console.error("tagType'" + String(tagType) + "' is not supported.");
                 return;
             }
-            tags[elm] = tagValue;
-        });
+            tags[elm] = await tagValue;
+        };
+        for(var elm of this.container.compressionHeaderBlock.get('content').get('pm').get('TD')[tagLine]) await readTagFunc(elm);
         r.tags = tags;
     }
 
