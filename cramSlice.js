@@ -309,9 +309,9 @@ class CramSlice {
             io = (await this.getBlockByExternalId(codec.get('externalId'))).get('IO');
             var a = [];
             var cf = new CramFile(codec.get('stopByte'), false);
-            const stopByte = cf.readUint8();
+            const stopByte = await cf.readUint8();
             while (true) {
-                var c = io.readUint8();
+                var c = await io.readUint8();
                 if (c == stopByte) {
                     return a;
                 }
