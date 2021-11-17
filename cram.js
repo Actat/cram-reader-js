@@ -87,7 +87,7 @@ class Cram {
         } else {
             craiBuffer = new Promise((resolve, reject) => {
                 var oReq = new XMLHttpRequest();
-                oReq.open("GET", this.arrBuf);
+                oReq.open("GET", this.crai);
                 oReq.responseType = "arraybuffer";
                 oReq.onload = function (oEvent) {
                     const ab = oReq.response;
