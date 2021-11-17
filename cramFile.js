@@ -16,12 +16,30 @@ class CramFile {
     }
 
     read(i) {
-        const sliced = this.arrBuf.slice(this.index, this.index + i);
-        this.index += i;
-        if(this.blobFlag) {
-            return sliced.arrayBuffer();
+        if (this.localFlag) {
+            const sliced = this.arrBuf.slice(this.index, this.index + i);
+            this.index += i;
+            if (this.blobFlag) {
+                return sliced.arrayBuffer();
+            } else {
+                const promise = new Promise((resolve, reject) => resolve(sliced));
+                return promise;
+            }
         } else {
-            const promise = new Promise((resolve, reject) => resolve(sliced));
+            const promise = new Promise((resolve, reject) => {
+                var oReq = new XMLHttpRequest();
+                oReq.open("GET", this.arrBuf);
+                oReq.responseType = "arraybuffer";
+                oReq.onload = function (oEvent) {
+                    const ab = oReq.response;
+                    if (ab) {
+                        resolve(ab);
+                    } else {
+                        reject(oReq.statusText);
+                    }
+                }
+                oReq.send();
+            })
             return promise;
         }
     }
