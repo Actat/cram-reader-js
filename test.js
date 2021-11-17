@@ -24,8 +24,8 @@ function testRemote() {
     const chr = document.forms.formRemote.chrnameRemote.value;
     const start = document.forms.formRemote.startRemote.value;
     const end = document.forms.formRemote.endRemote.value;
-    const cram = document.forms.formRemote.cramRemote.files[0];
-    const crai = document.forms.formRemote.craiRemote.files[0];
+    const cram = document.forms.formRemote.cramRemote.value;
+    const crai = document.forms.formRemote.craiRemote.value;
     console.log(chr);
     console.log(start);
     console.log(end)
