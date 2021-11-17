@@ -81,9 +81,28 @@ class Cram {
         if (typeof this.index !== 'undefined') {
             return this.index;
         }
-        const craiBuffer = await this.crai.arrayBuffer();
+        var craiBuffer;
+        if (this.localFlag) {
+            craiBuffer = this.crai.arrayBuffer();
+        } else {
+            craiBuffer = new Promise((resolve, reject) => {
+                var oReq = new XMLHttpRequest();
+                oReq.open("GET", this.arrBuf);
+                oReq.setRequestHeader("Range", "bytes=" + this.index + "-" + (this.index + i - 1));
+                oReq.responseType = "arraybuffer";
+                oReq.onload = function (oEvent) {
+                    const ab = oReq.response;
+                    if (ab) {
+                        resolve(ab);
+                    } else {
+                        reject(oReq.statusText);
+                    }
+                }
+                oReq.send();
+            });
+        }
         var index = [];
-        var compressed = new Uint8Array(craiBuffer);
+        var compressed = new Uint8Array(await craiBuffer);
         var gunzip = new Zlib.Gunzip(compressed);
         const plain = gunzip.decompress();
         const plaintext = String.fromCharCode.apply("", plain);
