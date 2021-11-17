@@ -28,7 +28,7 @@ class CramContainer {
         }
         var b = await this.cram.readBlock(this.pos + this.headerLength);
         var chb = new Map();
-        const data = new CramFile(b.get('data'), false);
+        const data = new CramFile(b.get('data'), true, false);
         // preservation map
         {
             chb.set('pm', new Map());

@@ -1,7 +1,8 @@
 class CramFile {
 
-    constructor(arrBuf, blobFlag = false) {
+    constructor(arrBuf, localFlag = true, blobFlag = false) {
         this.arrBuf = arrBuf;
+        this.localFlag = localFlag;
         this.blobFlag = blobFlag;
         this.index = 0;
     }
@@ -284,7 +285,7 @@ class CramFile {
         result.set('CRC32', await this.readUint32());
         result.set('blockSize', this.tell() - p);
         if (result.has('data')) {
-            result.set("IO", new CramFile(result.get('data'), false));
+            result.set("IO", new CramFile(result.get('data'), true, false));
         }
         return result
     }

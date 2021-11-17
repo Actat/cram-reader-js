@@ -1,7 +1,7 @@
 class Cram {
     constructor(cramFile, craiFile, localFlag) {
         this.localFlag = localFlag;
-        this.cram = new CramFile(cramFile, localFlag);
+        this.cram = new CramFile(cramFile, localFlag, localFlag);
         this.crai = craiFile;
     }
 
@@ -36,7 +36,7 @@ class Cram {
             if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
                 promises.push(new Promise((resolve) => {
                     // find records in the slice
-                    const container = new CramContainer(new CramFile(this.cram.arrBuf, this.localFlag), s[3]);
+                    const container = new CramContainer(new CramFile(this.cram.arrBuf, this.cram.localFlag, this.cram.blobFlag), s[3]);
                     const cramSlice = new CramSlice(container, s[4]);
                     const records = cramSlice.getRecords();
                     resolve(records);
