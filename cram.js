@@ -102,8 +102,18 @@ class Cram {
         }
         var index = [];
         var compressed = new Uint8Array(await craiBuffer);
-        var gunzip = new Zlib.Gunzip(compressed);
-        const plain = gunzip.decompress();
+        var plain;
+        try {
+            var gunzip = new Zlib.Gunzip(compressed);
+            plain = gunzip.decompress();
+        } catch (error) {
+            const e = error.toString();
+            if (e.includes("invalid file signature")) {
+                plain = compressed;
+            } else {
+                console.error(e);
+            }
+        }
         const plaintext = String.fromCharCode.apply("", plain);
         const lines = plaintext.split('\n');
         lines.forEach((line) => {
