@@ -40,7 +40,7 @@ class CramFile {
                     }
                 }
                 oReq.send();
-            })
+            });
             this.index += i;
             return promise;
         }
