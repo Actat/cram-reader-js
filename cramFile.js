@@ -29,6 +29,7 @@ class CramFile {
             const promise = new Promise((resolve, reject) => {
                 var oReq = new XMLHttpRequest();
                 oReq.open("GET", this.arrBuf);
+                oReq.setRequestHeader("Range", "bytes=" + this.index + "-" + this.index + i);
                 oReq.responseType = "arraybuffer";
                 oReq.onload = function (oEvent) {
                     const ab = oReq.response;
