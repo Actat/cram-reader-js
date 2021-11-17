@@ -88,7 +88,6 @@ class Cram {
             craiBuffer = new Promise((resolve, reject) => {
                 var oReq = new XMLHttpRequest();
                 oReq.open("GET", this.arrBuf);
-                oReq.setRequestHeader("Range", "bytes=" + this.index + "-" + (this.index + i - 1));
                 oReq.responseType = "arraybuffer";
                 oReq.onload = function (oEvent) {
                     const ab = oReq.response;
