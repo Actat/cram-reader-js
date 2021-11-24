@@ -147,7 +147,7 @@ class CramSlice {
 
     async decodeFeature(r) {
         var f = new Map();
-        f.set('FC', String.fromCharCode.apply("", new Uint8Array(this.readItem('FC', 'Byte'))));
+        f.set('FC', String.fromCharCode.apply("", new Uint8Array(await this.readItem('FC', 'Byte'))));
         f.set('FP', await this.readItem('FP', 'Int'));
         if (f.get('FC') == 'B') {
             f.set('BA', await this.readItem('BA', 'Byte'));
