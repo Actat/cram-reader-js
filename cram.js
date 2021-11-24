@@ -48,6 +48,7 @@ class Cram {
             results.forEach((records) => {
                 records.forEach((r) => {
                     if (r.refSeqId == id && r.position <= end && r.position + r.readLength >= start) {
+                        r.refSeqName = this.chrName[r.refSeqId];
                         r.restoreCigar();
                         reads.push(r);
                     }
