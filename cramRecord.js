@@ -123,4 +123,21 @@ class CramRecord{
             return;
         }
     }
+
+    toSAMString() {
+        var str = new String();
+        str += (this.readName === undefined ? '' : this.readName);
+        str += '\t' + (this.bf === undefined ? '' : this.bf);
+        str += '\t' + (this.refSeqName === undefined ? '' : this.refSeqName);
+        str += '\t' + (this.position === undefined ? '' : this.position);
+        str += '\t' + (this.mappingQuality === undefined ? '' : this.mappingQuality);
+        str += '\t' + (this.cigar === undefined ? '' : this.cigar);
+        str += '\t' + (this.mateReadName === undefined ? '' : this.mateReadName);
+        str += '\t' + (this.matePos === undefined ? '' : this.matePos);
+        str += '\t' + (this.templateSize === undefined ? '' : this.templateSize);
+        str += '\t' + (this.seq === undefined ? '' : this.seq) + '\t';
+        str += '\t' + (this.qualityScore === undefined ? '' : this.qualityScore);
+        str += '\t' + (this.tags === undefined ? '' : JSON.stringify(this.tags));
+        return str;
+    }
 }
