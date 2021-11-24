@@ -12,10 +12,13 @@ function testLocal() {
     changeState("Loading local file...");
     var c = new Cram(cram, crai, true);
     c.getRecords(chr, start, end).then((reads) => {
+        var result = new String();
         reads.forEach(r => {
             console.log(r);
+            result += r.toSAMString() + '\n';
         })
-        changeState("Local file has loaded. Records can be seen in 'console.log'.")
+        changeState(result);
+        console.log(result);
         console.log("finished.");
     });
 }
@@ -34,10 +37,13 @@ function testRemote() {
     var c = new Cram(cram, crai, false);
     changeState("Loading remote file...");
     c.getRecords(chr, start, end).then((reads) => {
+        var result = new String();
         reads.forEach(r => {
             console.log(r);
+            result += r.toSAMString() + '\n';
         })
-        changeState("Remote file has loaded. Records can be seen in 'console.log'.")
+        changeState(result);
+        console.log(result);
         console.log("finished.");
     });
 }

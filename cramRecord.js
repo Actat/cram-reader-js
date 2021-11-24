@@ -45,10 +45,10 @@ class CramRecord{
                         lastOp = 'M';
                     }
                 }
+                lastOpPos = feature.get("FP");
                 switch (feature.get("FC")) {
                     case 'X':
                         lastOpLen = 1;
-                        lastOpPos = feature.get("FP");
                         lastOp = "M";
                         if (lastOp == "M") {
                             cigarLn[cigarLn.length - 1]++
@@ -59,49 +59,42 @@ class CramRecord{
                         break;
                     case "S":
                         lastOpLen = feature.get("SC").length;
-                        lastOpPos = feature.get("FP");
                         lastOp = "S";
                         cigarLn.push(lastOpLen);
                         cigarOp.push("S");
                         break;
                     case "i":
                         lastOpLen = 1;
-                        lastOpPos = feature.get("FP");
                         lastOp = "I";
                         cigarLn.push(1);
                         cigarOp.push("I")
                         break;
                     case "I":
                         lastOpLen = feature.get("IN").length;
-                        lastOpPos = feature.get("FP");
                         lastOp = "I";
                         cigarLn.push(feature.get("IN").length);
                         cigarOp.push("I");
                         break;
                     case "D":
                         lastOpLen = 0;
-                        lastOpPos = feature.get("FP");
                         lastOp = feature.get("FC");
                         cigarLn.push(feature.get("DL"));
                         cigarOp.push(feature.get("FC"));
                         break;
                     case "N":
                         lastOpLen = 0;
-                        lastOpPos = feature.get("FP");
                         lastOp = feature.get("FC");
                         cigarLn.push(feature.get("RS"));
                         cigarOp.push(feature.get("FC"));
                         break;
                     case "P":
                         lastOpLen = 0;
-                        lastOpPos = feature.get("FP");
                         lastOp = feature.get("FC");
                         cigarLn.push(feature.get("PD"));
                         cigarOp.push(feature.get("FC"));
                         break;
                     case "H":
                         lastOpLen = 0;
-                        lastOpPos = feature.get("FP");
                         lastOp = feature.get("FC");
                         cigarLn.push(feature.get("HC"));
                         cigarOp.push(feature.get("FC"));
@@ -122,5 +115,22 @@ class CramRecord{
             this.cigar = cigar;
             return;
         }
+    }
+
+    toSAMString() {
+        var str = new String();
+        str += (this.readName === undefined ? '' : this.readName);
+        str += '\t' + (this.bf === undefined ? '' : this.bf);
+        str += '\t' + (this.refSeqName === undefined ? '' : this.refSeqName);
+        str += '\t' + (this.position === undefined ? '' : this.position);
+        str += '\t' + (this.mappingQuality === undefined ? '' : this.mappingQuality);
+        str += '\t' + (this.cigar === undefined ? '' : this.cigar);
+        str += '\t' + (this.mateReadName === undefined ? '' : this.mateReadName);
+        str += '\t' + (this.matePos === undefined ? '' : this.matePos);
+        str += '\t' + (this.templateSize === undefined ? '' : this.templateSize);
+        str += '\t' + (this.seq === undefined ? '' : this.seq) + '\t';
+        str += '\t' + (this.qualityScore === undefined ? '' : this.qualityScore);
+        str += '\t' + (this.tags === undefined ? '' : JSON.stringify(this.tags));
+        return str;
     }
 }
