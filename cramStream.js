@@ -4,6 +4,13 @@ class CramStream {
         this._index = 0;
     }
 
+    concat(arrBuf) {
+        var u8a = new Uint8Array(this._arrBuf.length + arrBuf.length);
+        u8a.set(new Uint8Array(this._arrBuf), 0);
+        u8a.set(new Uint8Array(arrBuf, this._arrBuf.length));
+        this._arrBuf = u8a.buffer;
+    }
+
     tell() {
         return this._index;
     }
