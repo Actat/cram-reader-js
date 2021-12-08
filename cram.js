@@ -19,42 +19,44 @@ class Cram {
         return chrName;
     }
 
-    async getRecords(chrName, start, end) {
-        if (!(await this.isCram30File())) {
-            console.error("The file is not cram 3.0 file.");
-        }
-
-        this.index = await this.loadCraiFile();
-        this.chrName = await this.createChrNameList();
-        this.cram.seek(6);
-        this.fileid = new Uint8Array(await this.cram.read(20));
-        // translate from chrName to reference sequence id
-        const id = this.chrName.indexOf(chrName);
-        // find slices by id, start and end
-        const promises = [];
-        this.index.forEach((s) => {
-            if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
-                promises.push(new Promise((resolve) => {
-                    // find records in the slice
-                    const container = new CramContainer(new CramFile(this.cram.arrBuf, this.cram.localFlag, this.cram.blobFlag), s[3]);
-                    const cramSlice = new CramSlice(container, s[4]);
-                    const records = cramSlice.getRecords();
-                    resolve(records);
-                }))
-            }
-        });
-        return Promise.all(promises).then((results)=>{
-            const reads = [];
-            results.forEach((records) => {
-                records.forEach((r) => {
-                    if (r.refSeqId == id && r.position <= end && r.position + r.readLength >= start) {
-                        r.refSeqName = this.chrName[r.refSeqId];
-                        r.restoreCigar();
-                        reads.push(r);
-                    }
-                });
-            })
-            return reads;
+    getRecords(chrName, start, end) {
+        return Promise.all(
+            [this.loadCramHeader(), this.loadCraiFile()]
+        ).then((lists) => {
+            this.chrName = lists[0];
+            this.index = lists[1];
+            // find slices by id, start and end
+            const id = this.chrName.indexOf(chrName);
+            const promises = [];
+            this.index.forEach((s) => {
+                if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
+                    promises.push(new Promise((resolve) => {
+                        // find records in the slice
+                        const container = new CramContainer(new CramFile(this.cram.arrBuf, this.cram.localFlag, this.cram.blobFlag), s[3]);
+                        const cramSlice = new CramSlice(container, s[4]);
+                        const records = cramSlice.getRecords();
+                        resolve(records);
+                    }))
+               }
+            });
+            return promises;
+        }).then((promises) => {
+            return Promise.all(promises).then((results)=>{
+                // find records match with chrName, start and end
+                const reads = [];
+                results.forEach((records) => {
+                    records.forEach((r) => {
+                        if (r.refSeqId == id && r.position <= end && r.position + r.readLength >= start) {
+                            r.restoreCigar();
+                            reads.push(r);
+                        }
+                    });
+                })
+                return reads;
+            });
+        }).catch((reason) => {
+            console.error(reason);
+            return;
         });
     }
 
