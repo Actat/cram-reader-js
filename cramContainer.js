@@ -4,6 +4,10 @@ class CramContainer {
         this.pos = pos;
     }
 
+    getPosition() {
+        return this.pos;
+    }
+
     decodeTagDictionary(arrBuf) {
         var data = new Int8Array(arrBuf);
         var d = [];
