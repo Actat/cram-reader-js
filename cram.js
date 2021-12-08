@@ -1,8 +1,8 @@
 class Cram {
     constructor(cramFile, craiFile, localFlag) {
-        this.localFlag = localFlag;
-        this.cram = new CramFile(cramFile, localFlag, localFlag);
-        this.crai = craiFile;
+        this._localFlag = localFlag;
+        this._cram = new FileHandler(cramFile, localFlag);
+        this._crai = craiFile;
     }
 
     getRecords(chrName, start, end) {
