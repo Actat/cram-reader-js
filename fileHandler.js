@@ -1,5 +1,8 @@
 class FileHandler {
-    constructor(file /* instance of File object or String of URL */, localFlag = true) {
+    constructor(
+        file /* instance of File object or String of URL */,
+        localFlag = true
+    ) {
         this._file = file;
         this._localFlag = localFlag;
     }
@@ -12,7 +15,10 @@ class FileHandler {
             } else {
                 var oReq = new XMLHttpRequest();
                 oReq.open("GET", this._file);
-                oReq.setRequestHeader("Range", "bytes=" + pos + "-" + (pos + length - 1));
+                oReq.setRequestHeader(
+                    "Range",
+                    "bytes=" + pos + "-" + (pos + length - 1)
+                );
                 oReq.responseType = "arraybuffer";
                 oReq.onload = function (oEvent) {
                     const ab = oReq.response;
@@ -21,7 +27,7 @@ class FileHandler {
                     } else {
                         reject(oReq.statusText);
                     }
-                }
+                };
                 oReq.send();
             }
         });

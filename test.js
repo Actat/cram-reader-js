@@ -6,17 +6,17 @@ function testLocal() {
     const crai = document.forms.formLocal.craiLocal.files[0];
     console.log(chr);
     console.log(start);
-    console.log(end)
+    console.log(end);
     console.log(cram);
     console.log(crai);
     changeState("Loading local file...");
     var c = new Cram(cram, crai, true);
     c.getRecords(chr, start, end).then((reads) => {
         var result = new String();
-        reads.forEach(r => {
+        reads.forEach((r) => {
             console.log(r);
-            result += r.toSAMString() + '\n';
-        })
+            result += r.toSAMString() + "\n";
+        });
         changeState(result);
         console.log(result);
         console.log("finished.");
@@ -31,17 +31,17 @@ function testRemote() {
     const crai = document.forms.formRemote.craiRemote.value;
     console.log(chr);
     console.log(start);
-    console.log(end)
+    console.log(end);
     console.log(cram);
     console.log(crai);
     var c = new Cram(cram, crai, false);
     changeState("Loading remote file...");
     c.getRecords(chr, start, end).then((reads) => {
         var result = new String();
-        reads.forEach(r => {
+        reads.forEach((r) => {
             console.log(r);
-            result += r.toSAMString() + '\n';
-        })
+            result += r.toSAMString() + "\n";
+        });
         changeState(result);
         console.log(result);
         console.log("finished.");

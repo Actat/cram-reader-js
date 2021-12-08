@@ -28,7 +28,7 @@ class CramRans {
                 sym = sym + 1;
             } else {
                 sym = await this.input.readUint8();
-                if (sym == last_sym + 1){
+                if (sym == last_sym + 1) {
                     rle = await this.input.readUint8();
                 }
             }
@@ -60,7 +60,7 @@ class CramRans {
     }
 
     async ransRenorm(R) {
-        while (R < (1 << 23)) {
+        while (R < 1 << 23) {
             R = (R << 8) + (await this.input.readUint8());
         }
         return R;
@@ -95,7 +95,7 @@ class CramRans {
         var last_sym = sym;
         var rle = 0;
         while (true) {
-            await this.readFrequencies0(F[sym], C[sym])
+            await this.readFrequencies0(F[sym], C[sym]);
             if (rle > 0) {
                 rle = rle - 1;
                 sym = sym + 1;
@@ -127,7 +127,7 @@ class CramRans {
             for (var j = 0; j < 4; j++) {
                 var f = this.ransGetCumulativeFreq(R[j]);
                 var s = this.ransGetSymbolFromFreq(C[L[j]], f);
-                output[i + Math.floor(j * nbytes / 4)] = s;
+                output[i + Math.floor((j * nbytes) / 4)] = s;
                 R[j] = this.ransAdvanceStep(R[j], C[L[j]][s], F[L[j]][s]);
                 R[j] = await this.ransRenorm(R[j]);
                 L[j] = s;
@@ -138,7 +138,7 @@ class CramRans {
         while (i < nbytes) {
             f = this.ransGetCumulativeFreq(R[3]);
             s = this.ransGetSymbolFromFreq(C[L[3]], f);
-            output[i + Math.floor(3 * nbytes / 4)] = s;
+            output[i + Math.floor((3 * nbytes) / 4)] = s;
             R[3] = this.ransAdvanceStep(R[3], C[L[3]][s], F[L[3]][s]);
             R[3] = await this.ransRenorm(R[3]);
             L[3] = s;
