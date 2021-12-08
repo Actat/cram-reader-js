@@ -111,9 +111,9 @@ class Cram {
 
             // read container
             var container = new CramContainer(stream, 26);
-            var ch = container.readHeader();
+            container.readHeader();
             var block = stream.readBlock(
-                ch.getPosition() + ch.getHeaderLength()
+                container.getPosition() + container.getHeaderLength()
             );
             var txt = String.fromCharCode.apply(
                 "",
