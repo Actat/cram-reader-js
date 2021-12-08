@@ -2,7 +2,7 @@ class Cram {
     constructor(cramFile, craiFile, localFlag) {
         this._localFlag = localFlag;
         this._cram = new FileHandler(cramFile, localFlag);
-        this._crai = craiFile;
+        this._crai = new FileHandler(craiFile, localFlag);
     }
 
     getRecords(chrName, start, end) {
@@ -89,59 +89,39 @@ class Cram {
         return head === "CRAM" && version[0] == 3 && version[1] == 0;
     }
 
-    async loadCraiFile() {
-        if (typeof this.index !== "undefined") {
-            return this.index;
-        }
-        var craiBuffer;
-        if (this.localFlag) {
-            craiBuffer = this.crai.arrayBuffer();
-        } else {
-            craiBuffer = new Promise((resolve, reject) => {
-                var oReq = new XMLHttpRequest();
-                oReq.open("GET", this.crai);
-                oReq.responseType = "arraybuffer";
-                oReq.onload = function (oEvent) {
-                    const ab = oReq.response;
-                    if (ab) {
-                        resolve(ab);
-                    } else {
-                        reject(oReq.statusText);
-                    }
-                };
-                oReq.send();
+    loadCraiFile() {
+        return this._crai.load().then((crai) => {
+            var index = [];
+            var compressed = new Uint8Array(crai);
+            var plain;
+            try {
+                var gunzip = new Zlib.Gunzip(compressed);
+                plain = gunzip.decompress();
+            } catch (error) {
+                if (error.toString().includes("invalid file signature")) {
+                    // For browsers that automatically extract zips
+                    plain = compressed;
+                } else {
+                    console.error(error);
+                }
+            }
+            var plaintext = String.fromCharCode.apply("", plain);
+            var lines = plaintext.split("\n");
+            lines.forEach((line) => {
+                var l = line.split("\t");
+                if (l.length == 6) {
+                    index.push([
+                        parseInt(l[0], 10),
+                        parseInt(l[1], 10),
+                        parseInt(l[2], 10),
+                        parseInt(l[3], 10),
+                        parseInt(l[4], 10),
+                        parseInt(l[5], 10),
+                    ]);
+                }
             });
-        }
-        var index = [];
-        var compressed = new Uint8Array(await craiBuffer);
-        var plain;
-        try {
-            var gunzip = new Zlib.Gunzip(compressed);
-            plain = gunzip.decompress();
-        } catch (error) {
-            const e = error.toString();
-            if (e.includes("invalid file signature")) {
-                plain = compressed;
-            } else {
-                console.error(e);
-            }
-        }
-        const plaintext = String.fromCharCode.apply("", plain);
-        const lines = plaintext.split("\n");
-        lines.forEach((line) => {
-            const l = line.split("\t");
-            if (l.length == 6) {
-                index.push([
-                    parseInt(l[0], 10),
-                    parseInt(l[1], 10),
-                    parseInt(l[2], 10),
-                    parseInt(l[3], 10),
-                    parseInt(l[4], 10),
-                    parseInt(l[5], 10),
-                ]);
-            }
+            return index;
         });
-        return index;
     }
 
     parseSamHeader(txt) {
