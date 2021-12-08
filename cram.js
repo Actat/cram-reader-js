@@ -112,21 +112,30 @@ class Cram {
             // read container
             var container = new CramContainer(stream, 26);
             container.readHeader();
-            var block = stream.readBlock(
-                container.getPosition() + container.getHeaderLength()
-            );
-            var txt = String.fromCharCode.apply(
-                "",
-                new Uint8Array(block.get("data"))
-            );
-            //var parsed = this.parseSamHeader(txt);
-            var chrNameList = [];
-            txt.split("\n").forEach((line) => {
-                var words = line.split("\t");
-                if (words[0] == "@SQ") {
-                    chrName.push(words[words.indexOf("SN") + 1]);
-                }
-            });
+            this._cram
+                .load(
+                    26 + 23,
+                    container.getHeaderLength() + container.landmarks[1] - 23
+                )
+                .then((arrBuf) => {
+                    this._cram.concat(arrBuf);
+                    var block = stream.readBlock(
+                        container.getPosition() + container.getHeaderLength()
+                    );
+                    var txt = String.fromCharCode.apply(
+                        "",
+                        new Uint8Array(block.get("data"))
+                    );
+                    //var parsed = this.parseSamHeader(txt);
+                    var chrNameList = [];
+                    txt.split("\n").forEach((line) => {
+                        var words = line.split("\t");
+                        if (words[0] == "@SQ") {
+                            chrName.push(words[words.indexOf("SN") + 1]);
+                        }
+                        return chrNameList;
+                    });
+                });
             return chrNameList;
         });
     }
