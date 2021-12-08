@@ -8,6 +8,10 @@ class CramContainer {
         return this.pos;
     }
 
+    getHeaderLength() {
+        return this.headerLength;
+    }
+
     decodeTagDictionary(arrBuf) {
         var data = new Int8Array(arrBuf);
         var d = [];
