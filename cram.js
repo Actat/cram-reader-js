@@ -31,7 +31,7 @@ class Cram {
                                         read.position + r.readLength >= start
                                     ) {
                                         read.refSeqName =
-                                            this.chrName[read.refSeqId];
+                                            chrNameList[read.refSeqId];
                                         read.restoreCigar();
                                         reads.push(read);
                                     }
@@ -53,40 +53,6 @@ class Cram {
                     return result;
                 });
             });
-    }
-
-    async createChrNameList() {
-        if (typeof this.chrName !== "undefined") {
-            return this.chrName;
-        }
-        this.samHeader = await this.getSamHeader();
-        var chrName = [];
-        this.samHeader.forEach((l) => {
-            if (l[0] == "@SQ") {
-                chrName.push(l[1].get("SN"));
-            }
-        });
-        return chrName;
-    }
-
-    async getSamHeader() {
-        if (typeof this.samHeader !== "undefined") {
-            return;
-        }
-        var c = new CramContainer(this.cram, 26);
-        await c.readHeader();
-        var b = await this.cram.readBlock(c.pos + c.headerLength);
-        var t = String.fromCharCode.apply("", new Uint8Array(b.get("data")));
-        return this.parseSamHeader(t);
-    }
-
-    async isCram30File() {
-        this.cram.seek(0);
-        var buf = await this.cram.read(4);
-        var head = String.fromCharCode.apply("", new Uint8Array(buf));
-        buf = await this.cram.read(2);
-        var version = new Uint8Array(buf);
-        return head === "CRAM" && version[0] == 3 && version[1] == 0;
     }
 
     loadCraiFile() {
@@ -124,18 +90,44 @@ class Cram {
         });
     }
 
-    parseSamHeader(txt) {
-        var result = [];
-        const lines = txt.split("\n");
-        lines.forEach((line) => {
-            const l = line.split("\t");
-            var d = new Map();
-            for (var i = 1; i < l.length; i++) {
-                const s = l[i].split(":");
-                d.set(s[0], s[1]);
+    loadCramHeader() {
+        return this._cram.load(26 + 23).then((arrBuf) => {
+            // check file signature
+            var stream = new CramStream(arrBuf);
+            var head = String.fromCharCode.apply(
+                "",
+                new Uint8Array(stream.read(4))
+            );
+            var version = new Uint8Array(stream.read(2));
+            if (head !== "CRAM" || version[0] !== 3 || version[1] !== 0) {
+                throw "[invalid file signature] This file is not CRAM 3.0 file.";
             }
-            result.push([l[0], d]);
+
+            // file id
+            this._fileid = String.fromCharCode.apply(
+                "",
+                new Uint8Array(stream.read(20))
+            );
+
+            // read container
+            var container = new CramContainer(strema, 26);
+            var ch = container.readHeader();
+            var block = stream.readBlock(
+                ch.getPosition() + ch.getHeaderLength()
+            );
+            var txt = String.fromCharCode.apply(
+                "",
+                new Uint8Array(block.get("data"))
+            );
+            //var parsed = this.parseSamHeader(txt);
+            var chrNameList = [];
+            txt.split("\n").forEach((line) => {
+                var words = line.split("\t");
+                if (words[0] == "@SQ") {
+                    chrName.push(words[words.indexOf("SN") + 1]);
+                }
+            });
+            return chrNameList;
         });
-        return result;
     }
 }
