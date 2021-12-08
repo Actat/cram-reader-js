@@ -131,16 +131,16 @@ class CramContainer {
 
     async readHeader() {
         this.cram.seek(this.pos);
-        this.length = await this.cram.readInt32();
-        this.refSeqId = await this.cram.readItf8();
-        this.startingRefPos = await this.cram.readItf8();
-        this.alignmentSpan = await this.cram.readItf8();
-        this.numberOfRecords = await this.cram.readItf8();
-        this.recordCounter = await this.cram.readLtf8();
-        this.bases = await this.cram.readLtf8();
-        this.numberOfBlocks = await this.cram.readItf8();
-        this.landmarks = await this.cram.readArrayItf8();
-        this.crc32 = await this.cram.readUint32();
-        this.headerLength = (await this.cram.tell()) - this.pos;
+        this.length = this.cram.readInt32();
+        this.refSeqId = this.cram.readItf8();
+        this.startingRefPos = this.cram.readItf8();
+        this.alignmentSpan = this.cram.readItf8();
+        this.numberOfRecords = this.cram.readItf8();
+        this.recordCounter = this.cram.readLtf8();
+        this.bases = this.cram.readLtf8();
+        this.numberOfBlocks = this.cram.readItf8();
+        this.landmarks = this.cram.readArrayItf8();
+        this.crc32 = this.cram.readUint32();
+        this.headerLength = this.cram.tell() - this.pos;
     }
 }
