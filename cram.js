@@ -91,7 +91,7 @@ class Cram {
     }
 
     loadCramHeader() {
-        return this._cram.load(26 + 23).then((arrBuf) => {
+        return this._cram.load(0, 26 + 23).then((arrBuf) => {
             // check file signature
             var stream = new CramStream(arrBuf);
             var head = String.fromCharCode.apply(
