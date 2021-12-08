@@ -110,7 +110,7 @@ class Cram {
             );
 
             // read container
-            var container = new CramContainer(strema, 26);
+            var container = new CramContainer(stream, 26);
             var ch = container.readHeader();
             var block = stream.readBlock(
                 ch.getPosition() + ch.getHeaderLength()
