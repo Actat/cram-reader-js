@@ -7,7 +7,9 @@ class Cram {
 
   getRecords(chr, start, end) {
     return Promise.all([this.loadCraiFile(), this.loadCramHeader()])
-      .then(([index, chrNameList]) => {
+      .then((values) => {
+        var index = values[0];
+        var chrNameList = values[1];
         var recordLists = [];
         // find slices which match with chr name, start and end
         var id = chrNameList.indexOf(chr);
