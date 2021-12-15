@@ -1,27 +1,27 @@
 class CramStream {
-  constructor(arrBuf) {
-    this._arrBuf = arrBuf;
-    this._index = 0;
+  constructor(arrbuf) {
+    this.buffer_ = arrbuf;
+    this.index_ = 0;
   }
 
-  concat(arrBuf) {
-    var u8a = new Uint8Array(this._arrBuf.length + arrBuf.length);
-    u8a.set(new Uint8Array(this._arrBuf), 0);
-    u8a.set(new Uint8Array(arrBuf, this._arrBuf.length));
-    this._arrBuf = u8a.buffer;
+  concat(arrbuf) {
+    var u8a = new Uint8Array(this.buffer_.length + arrbuf.length);
+    u8a.set(new Uint8Array(this.buffer_), 0);
+    u8a.set(new Uint8Array(arrbuf, this.buffer_.length));
+    this.buffer_ = u8a.buffer;
   }
 
   tell() {
-    return this._index;
+    return this.index_;
   }
 
   seek(i) {
-    this._index = i;
+    this.index_ = i;
   }
 
   read(i) {
-    const sliced = this._arrBuf.slice(this._index, this._index + i);
-    this._index += i;
+    const sliced = this.buffer_.slice(this.index_, this.index_ + i);
+    this.index_ += i;
     return sliced;
   }
 
@@ -79,28 +79,28 @@ class CramStream {
   }
 
   readItf8() {
-    const firstByte = this.readUint8();
-    if (firstByte >> 7 == 0b0) {
-      return firstByte & 0b01111111;
-    } else if (firstByte >> 6 == 0b10) {
+    const first_byte = this.readUint8();
+    if (first_byte >> 7 == 0b0) {
+      return first_byte & 0b01111111;
+    } else if (first_byte >> 6 == 0b10) {
       const i = this.readUint8();
-      return ((firstByte & 0b00111111) << 8) | i;
-    } else if (firstByte >> 5 == 0b110) {
+      return ((first_byte & 0b00111111) << 8) | i;
+    } else if (first_byte >> 5 == 0b110) {
       const i = this.readUint8();
       const j = this.readUint8();
-      return ((firstByte & 0b00011111) << 16) | (i << 8) | j;
-    } else if (firstByte >> 4 == 0b1110) {
+      return ((first_byte & 0b00011111) << 16) | (i << 8) | j;
+    } else if (first_byte >> 4 == 0b1110) {
       const i = this.readUint8();
       const j = this.readUint8();
       const k = this.readUint8();
-      return ((firstByte & 0b00001111) << 24) | (i << 16) | (j << 8) | k;
+      return ((first_byte & 0b00001111) << 24) | (i << 16) | (j << 8) | k;
     } else {
       const i = this.readUint8();
       const j = this.readUint8();
       const k = this.readUint8();
       const l = this.readUint8();
       const num =
-        ((firstByte & 0b00001111) << 28) |
+        ((first_byte & 0b00001111) << 28) |
         (i << 20) |
         (j << 12) |
         (k << 4) |
@@ -114,49 +114,49 @@ class CramStream {
   }
 
   readLtf8() {
-    const firstByte = BigInt(this.readUint8());
+    const first_byte = BigInt(this.readUint8());
 
-    if (firstByte >> 7n == 0b0n) {
-      return firstByte & 0b01111111n;
-    } else if (firstByte >> 6n == 0b10n) {
+    if (first_byte >> 7n == 0b0n) {
+      return first_byte & 0b01111111n;
+    } else if (first_byte >> 6n == 0b10n) {
       const i = BigInt(this.readInt8());
-      return ((firstByte & 0b00111111n) << 8n) | i;
-    } else if (firstByte >> 5n == 0b110n) {
+      return ((first_byte & 0b00111111n) << 8n) | i;
+    } else if (first_byte >> 5n == 0b110n) {
       const i = BigInt(this.readUint8());
       const j = BigInt(this.readUint8());
-      return ((firstByte & 0b00011111n) << 16n) | (i << 8n) | j;
-    } else if (firstByte >> 4n == 0b1110n) {
+      return ((first_byte & 0b00011111n) << 16n) | (i << 8n) | j;
+    } else if (first_byte >> 4n == 0b1110n) {
       const i = BigInt(this.readUint8());
       const j = BigInt(this.readUint8());
       const k = BigInt(this.readUint8());
-      return ((firstByte & 0b00001111n) << 24n) | (i << 16n) | (j << 8n) | k;
-    } else if (firstByte >> 3n == 0b11110n) {
+      return ((first_byte & 0b00001111n) << 24n) | (i << 16n) | (j << 8n) | k;
+    } else if (first_byte >> 3n == 0b11110n) {
       const i = BigInt(this.readUint8());
       const j = BigInt(this.readUint8());
       const k = BigInt(this.readUint8());
       const l = BigInt(this.readUint8());
       return (
-        ((firstByte & 0b00000111n) << 32n) |
+        ((first_byte & 0b00000111n) << 32n) |
         (i << 24n) |
         (j << 16n) |
         (k << 8n) |
         l
       );
-    } else if (firstByte >> 2n == 0b111110n) {
+    } else if (first_byte >> 2n == 0b111110n) {
       const i = BigInt(this.readUint8());
       const j = BigInt(this.readUint8());
       const k = BigInt(this.readUint8());
       const l = BigInt(this.readUint8());
       const m = BigInt(this.readUint8());
       return (
-        ((firstByte & 0b00000011n) << 40n) |
+        ((first_byte & 0b00000011n) << 40n) |
         (i << 32n) |
         (j << 24n) |
         (k << 16n) |
         (l << 8n) |
         m
       );
-    } else if (firstByte >> 1n == 0b1111110n) {
+    } else if (first_byte >> 1n == 0b1111110n) {
       const i = BigInt(this.readUint8());
       const j = BigInt(this.readUint8());
       const k = BigInt(this.readUint8());
@@ -164,7 +164,7 @@ class CramStream {
       const m = BigInt(this.readUint8());
       const n = BigInt(this.readUint8());
       return (
-        ((firstByte & 0b00000001n) << 48n) |
+        ((first_byte & 0b00000001n) << 48n) |
         (i << 40n) |
         (j << 32n) |
         (k << 24n) |
@@ -172,7 +172,7 @@ class CramStream {
         (m << 8n) |
         n
       );
-    } else if (firstByte == 0b11111110n) {
+    } else if (first_byte == 0b11111110n) {
       const i = BigInt(this.readUint8());
       const j = BigInt(this.readUint8());
       const k = BigInt(this.readUint8());
@@ -211,7 +211,7 @@ class CramStream {
   readEncodingInt() {
     var result = new Map();
     result.set("codecId", this.readItf8());
-    const numberOfBytesToFollow = this.readItf8();
+    const number_of_bytes_to_follow = this.readItf8();
     if (result.get("codecId") == 1) {
       // EXTERNAL: codec ID 1
       result.set("externalId", this.readItf8());
@@ -244,7 +244,7 @@ class CramStream {
   readEncodingByte() {
     var result = new Map();
     result.set("codecId", this.readItf8());
-    const numberOfBytesToFollow = this.readItf8();
+    const number_of_bytes_to_follow = this.readItf8();
 
     if (result.get("codecId") == 1) {
       // EXTERNAL: codec ID 1
@@ -264,7 +264,7 @@ class CramStream {
   readEncodingByteArray() {
     var result = new Map();
     result.set("codecId", this.readItf8());
-    const numberOfBytesToFollow = this.readItf8();
+    const number_of_bytes_to_follow = this.readItf8();
     if (result.get("codecId") == 4) {
       // BYTE_ARRAY_LEN: codec ID 4
       result.set("lengthsEncoding", this.readEncodingInt());
