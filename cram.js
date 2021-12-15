@@ -138,7 +138,7 @@ class Cram {
         );
         var list = [];
         txt.split("\n").forEach((line) => {
-          var words = line.split("\t");
+          var words = line.split(RegExp(/\t|:/));
           if (words[0] == "@SQ") {
             list.push(words[words.indexOf("SN") + 1]);
           }
