@@ -34,9 +34,9 @@ class CramContainer {
     if (typeof this.compressionHeaderBlock !== "undefined") {
       return this.compressionHeaderBlock;
     }
-    var b = await this.cram.readBlock(this.pos + this.headerLength);
+    var b = await this.cram.readBlock(this.headerLength);
     var chb = new Map();
-    const data = new CramFile(b.get("data"), true, false);
+    const data = new CramStream(b.get("data"), true, false);
     // preservation map
     {
       chb.set("pm", new Map());

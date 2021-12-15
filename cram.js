@@ -3,6 +3,7 @@ class Cram {
     this.local_flag_ = local_flag;
     this.cram_ = new FileHandler(cram, local_flag);
     this.crai_ = new FileHandler(crai, local_flag);
+    this.containers_ = new Map();
   }
 
   getRecords(chr, start, end) {
@@ -150,11 +151,82 @@ class Cram {
   loadAllRecordsInSlice_(slice_index) {
     return this.loadContainer_(slice_index[3])
       .then((container) => {
-        return this.loadSlice(slice_index, container);
+        return this.loadSlice_(slice_index, container);
       })
       .then((slice) => {
         return slice.getRecords();
       });
+  }
+
+  loadContainer_(pos) {
+    if (this.containers_.has(pos)) {
+      return this.containers_get(pos);
+    }
+    const first_load_length = 4 + 5 * 4 + 9 * 2 + 5 * 2;
+    // = 52 (int32, itf8 * 4 + ltf8 * 2 + itf8 * 2)
+    var container = this.cram_
+      .load(pos, first_load_length)
+      .then((arrBuf) => {
+        return new CramStream(arrBuf);
+      })
+      .then((stream) => {
+        var container = new CramContainer(stream, pos);
+        container.length = container.cram.readInt32();
+        container.refSeqId = container.cram.readItf8();
+        container.startingRefPos = container.cram.readItf8();
+        container.alignmentSpan = container.cram.readItf8();
+        container.numberOfRecords = container.cram.readItf8();
+        container.recordCounter = container.cram.readLtf8();
+        container.bases = container.cram.readLtf8();
+        container.numberOfBlocks = container.cram.readItf8();
+        container.landmarkscount = container.cram.readItf8();
+        return container;
+      });
+    var second_load_length = container.then((container) => {
+      return 5 * container.landmarkscount + 4; // itf8 * count + Uint32
+    });
+    var second_buffer = second_load_length.then((sll) => {
+      return this.cram_.load(pos + first_load_length, sll);
+    });
+    var compression_header_length = Promise.all([
+      container,
+      second_buffer,
+    ]).then((values) => {
+      var container = values[0];
+      var buffer = values[1];
+
+      container.cram.concat(buffer);
+      var list = [];
+      for (var i = 0; i < container.landmarkscount; i++) {
+        list.push(container.cram.readItf8());
+      }
+      container.landmarks = list;
+      container.crc32 = container.cram.readUint32();
+      container.headerLength = container.cram.tell();
+      return container.landmarks[0];
+    });
+    var third_buffer = Promise.all([
+      container,
+      compression_header_length,
+      second_load_length,
+    ]).then((values) => {
+      var container = values[0];
+      var chl = values[1];
+      var sll = values[2];
+
+      const third_load_length =
+        chl + container.getHeaderLength() - first_load_length - sll;
+      return this.cram_.load(pos + first_load_length + sll, third_load_length);
+    });
+    Promise.all([container, third_buffer]).then((values) => {
+      var container = values[0];
+      var buf = values[1];
+
+      container.cram.concat(buf);
+      container.getCompressionHeaderBlock();
+    });
+    this.containers_.set(pos, container);
+    return container;
   }
 
   filterRecord_(id, start, end, records) {
