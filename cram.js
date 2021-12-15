@@ -6,52 +6,51 @@ class Cram {
   }
 
   getRecords(chr, start, end) {
-    return Promise.all([this.loadCraiFile_(), this.loadCramHeader_()])
+    var index = this.loadCraiFile_();
+    var chr_list = this.loadCraiFile_();
+    var id = chr_list.then((chr_list) => {
+      return chr_list.indexOf(chr);
+    });
+    return Promise.all([index, id])
       .then((values) => {
         var index = values[0];
-        var chrNameList = values[1];
-        var recordLists = [];
+        var id = values[1];
+
         // find slices which match with chr name, start and end
-        var id = chrNameList.indexOf(chr);
+        var filtered_slices = [];
         index.forEach((s) => {
           if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
-            // load records in the slice
-            var recordsInSlice = this.loadContainer(s[3])
-              .then((container) => {
-                return this.loadSlice(s, container);
-              })
-              .then((slice) => {
-                return slice.getRecords();
-              })
-              .then((records) => {
-                // find reads match with id (chr name), start and end
-                var reads = [];
-                records.forEach((read) => {
-                  if (
-                    read.refSeqId == id &&
-                    read.position <= end &&
-                    read.position + r.readLength >= start
-                  ) {
-                    read.refSeqName = chrNameList[read.refSeqId];
-                    read.restoreCigar();
-                    reads.push(read);
-                  }
-                });
-                return reads;
-              });
-            recordLists.push(recordsInSlice);
+            filtered_slices.push(s);
           }
+        });
+        return filtered_slices;
+      })
+      .then((slices) => {
+        var recordLists = [];
+        slices.forEach((s) => {
+          // load records in the slice
+          var all_records = this.loadAllRecordsInSlice_(s);
+          var filtered = this.filterRecord_(all_records);
+          recordLists.push(filtered);
         });
         return recordLists;
       })
-      .then((recordLists) => {
-        Promise.all(recordLists).then((lists) => {
+      .then((record_lists) => {
+        return Promise.all(record_lists).then((lists) => {
           // concat all record lists
           var result = [];
           lists.forEach((list) => {
             result.concat(list);
           });
           return result;
+        });
+      })
+      .then((filtered_records) => {
+        return Promise.all(filtered_records).then((records) => {
+          records.forEach((record) => {
+            this.decorateRecords_(chr_list, record);
+          });
+          return records;
         });
       });
   }
@@ -146,5 +145,35 @@ class Cram {
         return list;
       }
     );
+  }
+
+  loadAllRecordsInSlice_(slice_index) {
+    return this.loadContainer_(slice_index[3])
+      .then((container) => {
+        return this.loadSlice(slice_index, container);
+      })
+      .then((slice) => {
+        return slice.getRecords();
+      });
+  }
+
+  filterRecord_(id, start, end, records) {
+    // find reads match with id, start and end
+    var filtered = [];
+    records.forEach((read) => {
+      if (
+        read.refSeqId == id &&
+        read.position <= end &&
+        read.position + r.readLength >= start
+      ) {
+        filtered.push(read);
+      }
+    });
+    return filtered;
+  }
+
+  decorateRecords_(chr_list, record) {
+    record.refSeqName = chr_list[record.refSeqId];
+    record.restoreCigar();
   }
 }
