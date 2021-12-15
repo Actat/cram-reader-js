@@ -90,49 +90,58 @@ class Cram {
   }
 
   loadCramHeader() {
-    return this.cram_.load(0, 26 + 23).then((arrBuf) => {
-      // check file signature
-      var stream = new CramStream(arrBuf);
-      var head = String.fromCharCode.apply("", new Uint8Array(stream.read(4)));
-      var version = new Uint8Array(stream.read(2));
-      if (head !== "CRAM" || version[0] !== 3 || version[1] !== 0) {
-        throw "[invalid file signature] This file is not CRAM 3.0 file.";
-      }
-
-      // file id
-      this.fileid_ = String.fromCharCode.apply(
-        "",
-        new Uint8Array(stream.read(20))
-      );
-
+    var checked_stream = this.cram_
+      .load(0, 26 + 23)
+      .then((arrBuf) => {
+        return new CramStream(arrBuf);
+      })
+      .then((stream) => {
+        // check file signature
+        // var head = String.fromCharCode.apply("", new Uint8Array(stream.read(4)));
+        var head = stream.readString(4);
+        var version = new Uint8Array(stream.read(2));
+        if (head !== "CRAM" || version[0] !== 3 || version[1] !== 0) {
+          throw "[invalid file signature] This file is not CRAM 3.0 file.";
+        }
+        // read file id
+        //this.fileid_ = String.fromCharCode.apply("", new Uint8Array(stream.read(20)));
+        this.fileid_ = stream.readString(20);
+        return stream;
+      });
+    var container = checked_stream.then((stream) => {
       // read container
       var container = new CramContainer(stream, 26);
       container.readHeader();
-      return this.cram_
-        .load(
-          26 + 23,
-          container.getHeaderLength() + container.landmarks[1] - 23
-        )
-        .then((arrBuf) => {
-          this.cram_.concat(arrBuf);
-          var block = stream.readBlock(
-            container.getPosition() + container.getHeaderLength()
-          );
-          var txt = String.fromCharCode.apply(
-            "",
-            new Uint8Array(block.get("data"))
-          );
-          //var parsed = this.parseSamHeader(txt);
-          var chrNameList = [];
-          txt.split("\n").forEach((line) => {
-            var words = line.split("\t");
-            if (words[0] == "@SQ") {
-              chr.push(words[words.indexOf("SN") + 1]);
-            }
-            return chrNameList;
-          });
-        });
-      //return chrNameList;
+      return container;
     });
+    var additional_buffer = container.then((container) => {
+      return this.cram_.load(
+        26 + 23,
+        container.getHeaderLength() + container.landmarks[1] - 23
+      );
+    });
+    return Promise.all([checked_stream, container, additional_buffer]).then(
+      (values) => {
+        var stream = values[0];
+        var container = values[1];
+        var ab = values[2];
+        stream.concat(ab);
+        var block = stream.readBlock(
+          container.getPosition() + container.getHeaderLength()
+        );
+        var txt = String.fromCharCode.apply(
+          "",
+          new Uint8Array(block.get("data"))
+        );
+        var list = [];
+        txt.split("\n").forEach((line) => {
+          var words = line.split("\t");
+          if (words[0] == "@SQ") {
+            list.push(words[words.indexOf("SN") + 1]);
+          }
+        });
+        return list;
+      }
+    );
   }
 }
