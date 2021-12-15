@@ -78,6 +78,10 @@ class CramStream {
     return String.fromCharCode.apply("", new Uint8Array(this.read(1)));
   }
 
+  readString(i) {
+    return String.fromCharCode.apply("", new Uint8Array(this.read(i)));
+  }
+
   readItf8() {
     const first_byte = this.readUint8();
     if (first_byte >> 7 == 0b0) {
