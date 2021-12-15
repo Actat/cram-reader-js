@@ -128,12 +128,14 @@ class Cram {
         var stream = values[0];
         var container = values[1];
         var ab = values[2];
+
         stream.concat(ab);
-        // create list of chrname
         var block = stream.readBlock(
           container.getPosition() + container.getHeaderLength()
         );
         var txt = block.get("IO").readString(block.get("rawSize"));
+
+        // create list of chrname
         var list = [];
         txt.split("\n").forEach((line) => {
           var words = line.split(RegExp(/\t|:/));
