@@ -1,24 +1,24 @@
 class FileHandler {
   constructor(
     file /* instance of File object or String of URL */,
-    localFlag = true
+    local_flag = true
   ) {
-    this._file = file;
-    this._localFlag = localFlag;
+    this.file_ = file;
+    this.local_flag_ = local_flag;
   }
 
   load(pos = -1, length = -1) {
     return new Promise((resolve, reject) => {
-      if (this._localFlag) {
+      if (this.local_flag_) {
         if (pos >= 0 && length > 0) {
-          var sliced = this._file.slice(pos, pos + length);
+          var sliced = this.file_.slice(pos, pos + length);
           resolve(sliced.arrayBuffer());
         } else {
-          resolve(this._file.arrayBuffer());
+          resolve(this.file_.arrayBuffer());
         }
       } else {
         var oReq = new XMLHttpRequest();
-        oReq.open("GET", this._file);
+        oReq.open("GET", this.file_);
         if (pos >= 0 && length > 0) {
           oReq.setRequestHeader(
             "Range",
