@@ -92,8 +92,10 @@ class Cram {
   }
 
   loadCramHeader() {
+    const file_definition_length = 26;
+    const max_header_length = 23;
     var checked_stream = this.cram_
-      .load(0, 26 + 23)
+      .load(0, file_definition_length + max_header_length)
       .then((arrBuf) => {
         return new CramStream(arrBuf);
       })
@@ -117,8 +119,8 @@ class Cram {
     });
     var additional_buffer = container.then((container) => {
       return this.cram_.load(
-        26 + 23,
-        container.getHeaderLength() + container.landmarks[1] - 23
+        file_definition_length + max_header_length,
+        container.getHeaderLength() + container.landmarks[1] - max_header_length
       );
     });
     return Promise.all([checked_stream, container, additional_buffer]).then(
