@@ -100,7 +100,7 @@ class Cram {
       }
 
       // file id
-      this._fileid = String.fromCharCode.apply(
+      this.fileid_ = String.fromCharCode.apply(
         "",
         new Uint8Array(stream.read(20))
       );
