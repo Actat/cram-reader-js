@@ -98,15 +98,14 @@ class Cram {
         return new CramStream(arrBuf);
       })
       .then((stream) => {
+        // process file definition
         // check file signature
-        // var head = String.fromCharCode.apply("", new Uint8Array(stream.read(4)));
         var head = stream.readString(4);
         var version = new Uint8Array(stream.read(2));
         if (head !== "CRAM" || version[0] !== 3 || version[1] !== 0) {
           throw "[invalid file signature] This file is not CRAM 3.0 file.";
         }
         // read file id
-        //this.fileid_ = String.fromCharCode.apply("", new Uint8Array(stream.read(20)));
         this.fileid_ = stream.readString(20);
         return stream;
       });
