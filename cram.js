@@ -6,7 +6,7 @@ class Cram {
   }
 
   getRecords(chr, start, end) {
-    return Promise.all([this.loadCraiFile(), this.loadCramHeader()])
+    return Promise.all([this.loadCraiFile_(), this.loadCramHeader_()])
       .then((values) => {
         var index = values[0];
         var chrNameList = values[1];
@@ -56,7 +56,7 @@ class Cram {
       });
   }
 
-  loadCraiFile() {
+  loadCraiFile_() {
     return this.crai_.load().then((crai) => {
       var index = [];
       var compressed = new Uint8Array(crai);
@@ -91,7 +91,7 @@ class Cram {
     });
   }
 
-  loadCramHeader() {
+  loadCramHeader_() {
     const file_definition_length = 26;
     const max_header_length = 23;
     var checked_stream = this.cram_
@@ -129,6 +129,7 @@ class Cram {
         var container = values[1];
         var ab = values[2];
         stream.concat(ab);
+        // create list of chrname
         var block = stream.readBlock(
           container.getPosition() + container.getHeaderLength()
         );
