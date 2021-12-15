@@ -7,7 +7,7 @@ class Cram {
 
   getRecords(chr, start, end) {
     var index = this.loadCraiFile_();
-    var chr_list = this.loadCraiFile_();
+    var chr_list = this.loadCramHeader_();
     var id = chr_list.then((chr_list) => {
       return chr_list.indexOf(chr);
     });
