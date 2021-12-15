@@ -132,10 +132,7 @@ class Cram {
         var block = stream.readBlock(
           container.getPosition() + container.getHeaderLength()
         );
-        var txt = String.fromCharCode.apply(
-          "",
-          new Uint8Array(block.get("data"))
-        );
+        var txt = block.get("IO").readString(block.get("rawSize"));
         var list = [];
         txt.split("\n").forEach((line) => {
           var words = line.split(RegExp(/\t|:/));
