@@ -1,16 +1,16 @@
 class Cram {
-  constructor(cramFile, craiFile, localFlag) {
-    this._localFlag = localFlag;
-    this._cram = new FileHandler(cramFile, localFlag);
-    this._crai = new FileHandler(craiFile, localFlag);
+  constructor(cram, crai, local_flag) {
+    this.local_flag_ = local_flag;
+    this.cram_ = new FileHandler(cram, local_flag);
+    this.crai_ = new FileHandler(crai, local_flag);
   }
 
-  getRecords(chrName, start, end) {
+  getRecords(chr, start, end) {
     return Promise.all([this.loadCraiFile(), this.loadCramHeader()])
       .then(([index, chrNameList]) => {
         var recordLists = [];
         // find slices which match with chr name, start and end
-        var id = chrNameList.indexOf(chrName);
+        var id = chrNameList.indexOf(chr);
         index.forEach((s) => {
           if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
             // load records in the slice
@@ -55,7 +55,7 @@ class Cram {
   }
 
   loadCraiFile() {
-    return this._crai.load().then((crai) => {
+    return this.crai_.load().then((crai) => {
       var index = [];
       var compressed = new Uint8Array(crai);
       var plain;
@@ -90,7 +90,7 @@ class Cram {
   }
 
   loadCramHeader() {
-    return this._cram.load(0, 26 + 23).then((arrBuf) => {
+    return this.cram_.load(0, 26 + 23).then((arrBuf) => {
       // check file signature
       var stream = new CramStream(arrBuf);
       var head = String.fromCharCode.apply("", new Uint8Array(stream.read(4)));
@@ -108,13 +108,13 @@ class Cram {
       // read container
       var container = new CramContainer(stream, 26);
       container.readHeader();
-      return this._cram
+      return this.cram_
         .load(
           26 + 23,
           container.getHeaderLength() + container.landmarks[1] - 23
         )
         .then((arrBuf) => {
-          this._cram.concat(arrBuf);
+          this.cram_.concat(arrBuf);
           var block = stream.readBlock(
             container.getPosition() + container.getHeaderLength()
           );
@@ -127,7 +127,7 @@ class Cram {
           txt.split("\n").forEach((line) => {
             var words = line.split("\t");
             if (words[0] == "@SQ") {
-              chrName.push(words[words.indexOf("SN") + 1]);
+              chr.push(words[words.indexOf("SN") + 1]);
             }
             return chrNameList;
           });
