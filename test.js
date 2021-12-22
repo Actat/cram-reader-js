@@ -11,16 +11,21 @@ function testLocal() {
   console.log(crai);
   changeState("Loading local file...");
   var c = new Cram(cram, crai, true);
-  c.getRecords(chr, start, end).then((reads) => {
-    var result = new String();
-    reads.forEach((r) => {
-      console.log(r);
-      result += r.toSAMString() + "\n";
+  c.getRecords(chr, start, end)
+    .then((reads) => {
+      var result = new String();
+      reads.forEach((r) => {
+        console.log(r);
+        result += r.toSAMString() + "\n";
+      });
+      changeState(result);
+      console.log(result);
+      console.log("finished.");
+    })
+    .catch((reason) => {
+      console.log(reason);
+      changeState("Error occurred. (" + reason + ")");
     });
-    changeState(result);
-    console.log(result);
-    console.log("finished.");
-  });
 }
 
 function testRemote() {
@@ -36,16 +41,21 @@ function testRemote() {
   console.log(crai);
   var c = new Cram(cram, crai, false);
   changeState("Loading remote file...");
-  c.getRecords(chr, start, end).then((reads) => {
-    var result = new String();
-    reads.forEach((r) => {
-      console.log(r);
-      result += r.toSAMString() + "\n";
+  c.getRecords(chr, start, end)
+    .then((reads) => {
+      var result = new String();
+      reads.forEach((r) => {
+        console.log(r);
+        result += r.toSAMString() + "\n";
+      });
+      changeState(result);
+      console.log(result);
+      console.log("finished.");
+    })
+    .catch((reason) => {
+      console.log(reason);
+      changeState("Error occurred. (" + reason + ")");
     });
-    changeState(result);
-    console.log(result);
-    console.log("finished.");
-  });
 }
 
 function changeState(str) {
