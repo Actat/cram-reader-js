@@ -31,7 +31,7 @@ class Cram {
         slices.forEach((s) => {
           // load records in the slice
           var all_records = this.loadAllRecordsInSlice_(s);
-          var filtered = this.filterRecord_(all_records);
+          var filtered = this.filterRecord_(id, start, end, all_records);
           recordLists.push(filtered);
         });
         return recordLists;
