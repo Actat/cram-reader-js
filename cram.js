@@ -7,42 +7,45 @@ class Cram {
   }
 
   getRecords(chr, start, end) {
-    var index = this.loadCraiFile_();
-    var chr_list = this.loadCramHeader_();
-    var id = chr_list.then((chr_list) => {
-      return chr_list.indexOf(chr);
-    });
-    var record_lists = [];
-    var promise_list = Promise.all([index, id]).then((values) => {
-      var index = values[0];
-      var id = values[1];
-      var promises = [];
-
-      // find slices which match with chr name, start and end
-      index.forEach((s) => {
-        if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
-          var all_records = this.loadAllRecordsInSlice_(s);
-          var records_have_pushed = all_records.then((records) => {
-            var filtered = this.filterRecord_(id, start, end, records);
-            record_lists.push(filtered);
-          });
-          promises.push(records_have_pushed);
-        }
+    return new Promise((resolve, reject) => {
+      var index = this.loadCraiFile_();
+      var chr_list = this.loadCramHeader_();
+      var id = chr_list.then((chr_list) => {
+        return chr_list.indexOf(chr);
       });
-      return promises;
-    });
-    return promise_list.then((promises) => {
-      return Promise.all(promises).then(() => {
-        // concat all record lists
-        var filtered_records = [];
-        record_lists.forEach((list) => {
-          filtered_records.concat(list);
+      var record_lists = [];
+      var promise_list = Promise.all([index, id]).then((values) => {
+        var index = values[0];
+        var id = values[1];
+        var promises = [];
+
+        // find slices which match with chr name, start and end
+        index.forEach((s) => {
+          if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
+            var all_records = this.loadAllRecordsInSlice_(s);
+            var records_have_pushed = all_records.then((records) => {
+              var filtered = this.filterRecord_(id, start, end, records);
+              record_lists.push(filtered);
+            });
+            promises.push(records_have_pushed);
+          }
         });
-        // decorate all records
-        filtered_records.forEach((record) => {
-          this.decorateRecords_(chr_list, record);
+        return promises;
+      });
+      promise_list.then((promises) => {
+        Promise.all(promises).then(() => {
+          // concat all record lists
+          var filtered_records = [];
+          record_lists.forEach((list) => {
+            filtered_records = filtered_records.concat(list);
+          });
+          // decorate all records
+          filtered_records.forEach((record) => {
+            this.decorateRecords_(chr_list, record);
+            filtered_records.push(record);
+          });
+          resolve(filtered_records);
         });
-        return filtered_records;
       });
     });
   }
@@ -235,7 +238,7 @@ class Cram {
       if (
         read.refSeqId == id &&
         read.position <= end &&
-        read.position + r.readLength >= start
+        read.position + read.readLength >= start
       ) {
         filtered.push(read);
       }
