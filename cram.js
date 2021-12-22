@@ -42,7 +42,6 @@ class Cram {
           // decorate all records
           filtered_records.forEach((record) => {
             this.decorateRecords_(chr_list, record);
-            filtered_records.push(record);
           });
           resolve(filtered_records);
         });
