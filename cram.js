@@ -9,9 +9,11 @@ class Cram {
   getRecords(chr, start, end) {
     return new Promise((resolve, reject) => {
       var index = this.loadCraiFile_();
-      var chr_list = this.loadCramHeader_();
-      var id = chr_list.then((chr_list) => {
-        return chr_list.indexOf(chr);
+      var chr_list_promise = this.loadCramHeader_();
+      var chr_list;
+      var id = chr_list_promise.then((cl) => {
+        chr_list = cl;
+        return cl.indexOf(chr);
       });
       var record_lists = [];
       var promise_list = Promise.all([index, id]).then((values) => {
