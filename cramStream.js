@@ -308,24 +308,10 @@ class CramStream {
       result.set("data", plain.buffer);
     } else if (result.get("method") == 2) {
       // bzip2
-      console.log(
-        "bzip2 is not supported (contentTypeId: " +
-          str(result.get("contentTypeId")) +
-          ", contentId: " +
-          str(result.get("contentId")) +
-          ")"
-      );
-      //result["data"] = data
+      throw "bzip2 is not supported";
     } else if (result.get("method") == 3) {
       // lzma
-      console.log(
-        "lzma is not supported (contentTypeId: " +
-          str(result.get("contentTypeId")) +
-          ", contentId: " +
-          str(result.get("contentId")) +
-          ")"
-      );
-      //result["data"] = data
+      throw "lzma is not supported ";
     } else if (result.get("method") == 4) {
       // rans
       var cr = new CramRans(data);
