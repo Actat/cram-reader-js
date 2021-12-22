@@ -297,15 +297,16 @@ class CramStream {
     result.set("size", this.readItf8());
     result.set("rawSize", this.readItf8());
     const data = this.read(result.get("size"));
+    var raw_data;
     if (result.get("method") == 0) {
       // raw
-      result.set("data", data);
+      raw_data = data;
     } else if (result.get("method") == 1) {
       // gzip
       var compressed = new Uint8Array(data);
       var gunzip = new Zlib.Gunzip(compressed);
       var plain = gunzip.decompress();
-      result.set("data", plain.buffer);
+      raw_data = plain.buffer;
     } else if (result.get("method") == 2) {
       // bzip2
       throw "bzip2 is not supported";
@@ -315,13 +316,11 @@ class CramStream {
     } else if (result.get("method") == 4) {
       // rans
       var cr = new CramRans(data);
-      result.set("data", cr.ransDecode());
+      raw_data = cr.ransDecode();
     }
+    result.set("IO", new CramStream(raw_data));
     result.set("CRC32", this.readUint32());
     result.set("blockSize", this.tell() - p);
-    if (result.has("data")) {
-      result.set("IO", new CramStream(result.get("data")));
-    }
     return result;
   }
 }
