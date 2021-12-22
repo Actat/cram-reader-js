@@ -137,13 +137,14 @@ class Cram {
   }
 
   loadAllRecordsInSlice_(slice_index) {
-    return this.loadContainer_(slice_index[3])
-      .then((container) => {
-        return this.loadSlice_(slice_index, container);
-      })
-      .then((slice) => {
-        return slice.getRecords();
-      });
+    var container = this.loadContainer_(slice_index[3]);
+    var arrbuf = container.then((container) => {
+      return this.loadSlice_(slice_index, container);
+    });
+    return Promise.all([container, arrbuf]).then((values) => {
+      var slice = new CramSlice(values[0], values[1]);
+      return slice.loadRecords();
+    });
   }
 
   loadContainer_(pos) {
