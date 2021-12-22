@@ -217,6 +217,13 @@ class Cram {
     return container;
   }
 
+  loadSlice_(slice_index, container) {
+    const slice_pos =
+      slice_index[3] + container.getHeaderLength() + slice_index[4];
+    const slice_length = slice_index[5];
+    return this.cram_.load(slice_pos, slice_length);
+  }
+
   filterRecord_(id, start, end, records) {
     // find reads match with id, start and end
     var filtered = [];
