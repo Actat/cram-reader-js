@@ -12,48 +12,36 @@ class Cram {
     var id = chr_list.then((chr_list) => {
       return chr_list.indexOf(chr);
     });
-    return Promise.all([index, id])
-      .then((values) => {
-        var index = values[0];
-        var id = values[1];
+    var record_lists = [];
+    var record_pushed = [];
+    Promise.all([index, id]).then((values) => {
+      var index = values[0];
+      var id = values[1];
 
-        // find slices which match with chr name, start and end
-        var filtered_slices = [];
-        index.forEach((s) => {
-          if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
-            filtered_slices.push(s);
-          }
-        });
-        return filtered_slices;
-      })
-      .then((slices) => {
-        var recordLists = [];
-        slices.forEach((s) => {
-          // load records in the slice
+      // find slices which match with chr name, start and end
+      index.forEach((s) => {
+        if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
           var all_records = this.loadAllRecordsInSlice_(s);
-          var filtered = this.filterRecord_(id, start, end, all_records);
-          recordLists.push(filtered);
-        });
-        return recordLists;
-      })
-      .then((record_lists) => {
-        return Promise.all(record_lists).then((lists) => {
-          // concat all record lists
-          var result = [];
-          lists.forEach((list) => {
-            result.concat(list);
+          var pushed = all_records.then((records) => {
+            var filtered = this.filterRecord_(id, start, end, records);
+            record_lists.push(filtered);
           });
-          return result;
-        });
-      })
-      .then((filtered_records) => {
-        return Promise.all(filtered_records).then((records) => {
-          records.forEach((record) => {
-            this.decorateRecords_(chr_list, record);
-          });
-          return records;
-        });
+          record_pushed.push(pushed);
+        }
       });
+    });
+    return Promise.all(record_pushed).then(() => {
+      // concat all record lists
+      var filtered_records = [];
+      record_lists.forEach((list) => {
+        filtered_records.concat(list);
+      });
+      // decorate all records
+      filtered_records.forEach((record) => {
+        this.decorateRecords_(chr_list, record);
+      });
+      return filtered_records;
+    });
   }
 
   loadCraiFile_() {
