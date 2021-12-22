@@ -207,15 +207,15 @@ class Cram {
         chl + container.getHeaderLength() - first_load_length - sll;
       return this.cram_.load(pos + first_load_length + sll, third_load_length);
     });
-    Promise.all([container, third_buffer]).then((values) => {
+    return Promise.all([container, third_buffer]).then((values) => {
       var container = values[0];
       var buf = values[1];
 
       container.cram.concat(buf);
       container.getCompressionHeaderBlock();
+      return container;
     });
     this.containers_.set(pos, container);
-    return container;
   }
 
   loadSlice_(slice_index, container) {
