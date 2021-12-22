@@ -1,7 +1,7 @@
 class CramSlice {
-  constructor(container, offset) {
-    this.container = container;
-    this.offset = offset;
+  constructor(container, arr_buf) {
+    this.container_ = container;
+    this.str_ = new CramStream(arr_buf);
   }
 
   async decodePositions(r) {
