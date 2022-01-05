@@ -12,9 +12,8 @@ class Cram {
   getRecords(chr, start, end) {
     return new Promise((resolve, reject) => {
       var index = this.loadCraiFile_();
-      var chr_list_promise = this.loadCramHeader_();
       var chr_list;
-      var id = chr_list_promise
+      var id = this.loadCramHeader_()
         .then((cl) => {
           chr_list = cl;
           return cl.indexOf(chr);
