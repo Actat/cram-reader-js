@@ -1,5 +1,8 @@
 class Cram {
   constructor(cram, crai, local_flag) {
+    if (!cram || !crai) {
+      throw "Files are Falsy";
+    }
     this.local_flag_ = local_flag;
     this.cram_ = new FileHandler(cram, local_flag);
     this.crai_ = new FileHandler(crai, local_flag);
