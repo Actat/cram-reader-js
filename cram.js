@@ -23,7 +23,7 @@ class Cram {
           reject(e);
         });
       var record_lists = [];
-      var promise_list = Promise.all([index, id])
+      Promise.all([index, id])
         .then((values) => {
           var index = values[0];
           var id = values[1];
@@ -42,10 +42,6 @@ class Cram {
           });
           return promises;
         })
-        .catch((e) => {
-          reject(e);
-        });
-      promise_list
         .then((promises) => {
           Promise.all(promises).then(() => {
             // concat all record lists
