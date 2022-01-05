@@ -14,43 +14,55 @@ class Cram {
       var index = this.loadCraiFile_();
       var chr_list_promise = this.loadCramHeader_();
       var chr_list;
-      var id = chr_list_promise.then((cl) => {
-        chr_list = cl;
-        return cl.indexOf(chr);
-      });
+      var id = chr_list_promise
+        .then((cl) => {
+          chr_list = cl;
+          return cl.indexOf(chr);
+        })
+        .catch((e) => {
+          reject(e);
+        });
       var record_lists = [];
-      var promise_list = Promise.all([index, id]).then((values) => {
-        var index = values[0];
-        var id = values[1];
-        var promises = [];
+      var promise_list = Promise.all([index, id])
+        .then((values) => {
+          var index = values[0];
+          var id = values[1];
+          var promises = [];
 
-        // find slices which match with chr name, start and end
-        index.forEach((s) => {
-          if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
-            var all_records = this.loadAllRecordsInSlice_(s);
-            var records_have_pushed = all_records.then((records) => {
-              var filtered = this.filterRecord_(id, start, end, records);
-              record_lists.push(filtered);
+          // find slices which match with chr name, start and end
+          index.forEach((s) => {
+            if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
+              var all_records = this.loadAllRecordsInSlice_(s);
+              var records_have_pushed = all_records.then((records) => {
+                var filtered = this.filterRecord_(id, start, end, records);
+                record_lists.push(filtered);
+              });
+              promises.push(records_have_pushed);
+            }
+          });
+          return promises;
+        })
+        .catch((e) => {
+          reject(e);
+        });
+      promise_list
+        .then((promises) => {
+          Promise.all(promises).then(() => {
+            // concat all record lists
+            var filtered_records = [];
+            record_lists.forEach((list) => {
+              filtered_records = filtered_records.concat(list);
             });
-            promises.push(records_have_pushed);
-          }
-        });
-        return promises;
-      });
-      promise_list.then((promises) => {
-        Promise.all(promises).then(() => {
-          // concat all record lists
-          var filtered_records = [];
-          record_lists.forEach((list) => {
-            filtered_records = filtered_records.concat(list);
+            // decorate all records
+            filtered_records.forEach((record) => {
+              this.decorateRecords_(chr_list, record);
+            });
+            resolve(filtered_records);
           });
-          // decorate all records
-          filtered_records.forEach((record) => {
-            this.decorateRecords_(chr_list, record);
-          });
-          resolve(filtered_records);
+        })
+        .catch((e) => {
+          reject(e);
         });
-      });
     });
   }
 
