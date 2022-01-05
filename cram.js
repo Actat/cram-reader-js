@@ -77,6 +77,9 @@ class Cram {
       } catch (error) {
         if (error.toString().includes("invalid file signature")) {
           // For browsers that automatically extract zips
+          console.log(
+            "The crai file may be wrong, or a meddlesome browser may have unzipped it."
+          );
           plain = compressed;
         } else {
           console.error(error);
