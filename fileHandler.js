@@ -34,6 +34,12 @@ class FileHandler {
             reject(oReq.statusText);
           }
         };
+        oReq.onerror = function () {
+          reject("An error occurred during HTTP access");
+        };
+        oReq.onabort = function () {
+          reject("HTTP access  is aborted.");
+        };
         oReq.send();
       }
     });
