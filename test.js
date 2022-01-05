@@ -9,8 +9,8 @@ function testLocal() {
   console.log(end);
   console.log(cram);
   console.log(crai);
-  changeState("Loading local file...");
   var c = new Cram(cram, crai, true);
+  changeState("Loading local file...");
   c.getRecords(chr, start, end)
     .then((reads) => {
       var result = new String();
