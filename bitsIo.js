@@ -1,33 +1,35 @@
 class BitsIO {
-    constructor(arrBuf) {
-        this.array = new Uint8Array(arrBuf);
-        this.index = 0;
-        this.popNextByte();
-    }
+  constructor(arrBuf) {
+    this.array_ = new Uint8Array(arrBuf);
+    this.array_index_ = 0;
+    this.byte_ = 0;
+    this.byte_index_ = 0;
+    this.popNextByte_();
+  }
 
-    read(size) {
-        var i = 0;
-        var j = size;
-        while (j > 0) {
-            i += this.readNextBit() * (2 ** (j - 1));
-            j -= 1;
-        }
-        return i;
+  read(size) {
+    var i = 0;
+    var j = size;
+    while (j > 0) {
+      i += this.readNextBit_() * 2 ** (j - 1);
+      j -= 1;
     }
+    return i;
+  }
 
-    readNextBit() {
-        const i = (this.buffer & (2 ** this.pos)) >> this.pos
-        if (this.pos == 0) {
-            this.popNextByte();
-        } else {
-            this.pos -= 1;
-        }
-        return i;
+  readNextBit_() {
+    const i = (this.byte_ & (2 ** this.byte_index_)) >> this.byte_index_;
+    if (this.byte_index_ == 0) {
+      this.popNextByte_();
+    } else {
+      this.byte_index_ -= 1;
     }
+    return i;
+  }
 
-    popNextByte() {
-        this.buffer = this.array[this.index];
-        this.index += 1;
-        this.pos = 7;
-    }
+  popNextByte_() {
+    this.byte_ = this.array_[this.array_index_];
+    this.array_index_ += 1;
+    this.byte_index_ = 7;
+  }
 }

@@ -1,149 +1,268 @@
 class Cram {
-    constructor(cramFile, craiFile, localFlag) {
-        this.localFlag = localFlag;
-        this.cram = new CramFile(cramFile, localFlag, localFlag);
-        this.crai = craiFile;
+  constructor(cram, crai, local_flag) {
+    if (!cram || !crai) {
+      throw "Files are Falsy";
     }
+    this.local_flag_ = local_flag;
+    this.cram_ = new FileHandler(cram, local_flag);
+    this.crai_ = new FileHandler(crai, local_flag);
+    this.containers_ = new Map();
+  }
 
-    async createChrNameList() {
-        if (typeof this.chrName !== 'undefined') {
-            return this.chrName;
-        }
-        this.samHeader = await this.getSamHeader();
-        var chrName = [];
-        this.samHeader.forEach((l) => {
-            if (l[0] == '@SQ') {
-                chrName.push(l[1].get('SN'));
-            }
+  getRecords(chr, start, end) {
+    return new Promise((resolve, reject) => {
+      var index = this.loadCraiFile_();
+      var chr_list;
+      var id = this.loadCramHeader_()
+        .then((cl) => {
+          chr_list = cl;
+          return cl.indexOf(chr);
+        })
+        .catch((e) => {
+          reject(e);
         });
-        return chrName;
-    }
+      var record_lists = [];
+      Promise.all([index, id])
+        .then((values) => {
+          var index = values[0];
+          var id = values[1];
+          var promises = [];
 
-    async getRecords(chrName, start, end) {
-        if (!(await this.isCram30File())) {
-            console.error("The file is not cram 3.0 file.");
-        }
-
-        this.index = await this.loadCraiFile();
-        this.chrName = await this.createChrNameList();
-        this.cram.seek(6);
-        this.fileid = new Uint8Array(await this.cram.read(20));
-        // translate from chrName to reference sequence id
-        const id = this.chrName.indexOf(chrName);
-        // find slices by id, start and end
-        const promises = [];
-        this.index.forEach((s) => {
+          // find slices which match with chr name, start and end
+          index.forEach((s) => {
             if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
-                promises.push(new Promise((resolve) => {
-                    // find records in the slice
-                    const container = new CramContainer(new CramFile(this.cram.arrBuf, this.cram.localFlag, this.cram.blobFlag), s[3]);
-                    const cramSlice = new CramSlice(container, s[4]);
-                    const records = cramSlice.getRecords();
-                    resolve(records);
-                }))
-            }
-        });
-        return Promise.all(promises).then((results)=>{
-            const reads = [];
-            results.forEach((records) => {
-                records.forEach((r) => {
-                    if (r.refSeqId == id && r.position <= end && r.position + r.readLength >= start) {
-                        r.refSeqName = this.chrName[r.refSeqId];
-                        r.restoreCigar();
-                        reads.push(r);
-                    }
-                });
-            })
-            return reads;
-        });
-    }
-
-    async getSamHeader() {
-        if (typeof this.samHeader !== 'undefined') {
-            return;
-        }
-        var c = new CramContainer(this.cram, 26);
-        await c.readHeader();
-        var b = await this.cram.readBlock(c.pos + c.headerLength);
-        var t = String.fromCharCode.apply("", new Uint8Array(b.get("data")));
-        return this.parseSamHeader(t);
-    }
-
-    async isCram30File() {
-        this.cram.seek(0);
-        var buf = await this.cram.read(4);
-        var head = String.fromCharCode.apply("", new Uint8Array(buf));
-        buf = await this.cram.read(2);
-        var version = new Uint8Array(buf);
-        return head === 'CRAM' && version[0] == 3 && version[1] == 0;
-    }
-
-    async loadCraiFile() {
-        if (typeof this.index !== 'undefined') {
-            return this.index;
-        }
-        var craiBuffer;
-        if (this.localFlag) {
-            craiBuffer = this.crai.arrayBuffer();
-        } else {
-            craiBuffer = new Promise((resolve, reject) => {
-                var oReq = new XMLHttpRequest();
-                oReq.open("GET", this.crai);
-                oReq.responseType = "arraybuffer";
-                oReq.onload = function (oEvent) {
-                    const ab = oReq.response;
-                    if (ab) {
-                        resolve(ab);
-                    } else {
-                        reject(oReq.statusText);
-                    }
+              var records_have_pushed = this.loadAllRecordsInSlice_(s).then(
+                (records) => {
+                  var filtered = this.filterRecord_(id, start, end, records);
+                  record_lists.push(filtered);
                 }
-                oReq.send();
+              );
+              promises.push(records_have_pushed);
+            }
+          });
+          return promises;
+        })
+        .then((promises) => {
+          Promise.all(promises).then(() => {
+            // concat all record lists
+            var filtered_records = [];
+            record_lists.forEach((list) => {
+              filtered_records = filtered_records.concat(list);
             });
-        }
-        var index = [];
-        var compressed = new Uint8Array(await craiBuffer);
-        var plain;
-        try {
-            var gunzip = new Zlib.Gunzip(compressed);
-            plain = gunzip.decompress();
-        } catch (error) {
-            const e = error.toString();
-            if (e.includes("invalid file signature")) {
-                plain = compressed;
-            } else {
-                console.error(e);
-            }
-        }
-        const plaintext = String.fromCharCode.apply("", plain);
-        const lines = plaintext.split('\n');
-        lines.forEach((line) => {
-            const l = line.split('\t');
-            if (l.length == 6) {
-                index.push([
-                    parseInt(l[0], 10),
-                    parseInt(l[1], 10),
-                    parseInt(l[2], 10),
-                    parseInt(l[3], 10),
-                    parseInt(l[4], 10),
-                    parseInt(l[5], 10)]);
-            }
+            // decorate all records
+            filtered_records.forEach((record) => {
+              this.decorateRecords_(chr_list, record);
+            });
+            resolve(filtered_records);
+          });
+        })
+        .catch((e) => {
+          reject(e);
         });
-        return index;
-    }
+    });
+  }
 
-    parseSamHeader(txt) {
-        var result = [];
-        const lines = txt.split('\n');
-        lines.forEach((line) => {
-            const l = line.split('\t');
-            var d = new Map();
-            for (var i = 1; i < l.length; i++) {
-                const s = l[i].split(':');
-                d.set(s[0], s[1]);
-            }
-            result.push([l[0], d]);
+  loadCraiFile_() {
+    return this.crai_.load().then((crai) => {
+      var index = [];
+      var compressed = new Uint8Array(crai);
+      var plain;
+      try {
+        var gunzip = new Zlib.Gunzip(compressed);
+        plain = gunzip.decompress();
+      } catch (error) {
+        if (error.toString().includes("invalid file signature")) {
+          // For browsers that automatically extract zips
+          console.log(
+            "The crai file may be wrong, or a meddlesome browser may have unzipped it."
+          );
+          plain = compressed;
+        } else {
+          console.error(error);
+        }
+      }
+      var plaintext = String.fromCharCode.apply("", plain);
+      var lines = plaintext.split("\n");
+      lines.forEach((line) => {
+        var l = line.split("\t");
+        if (l.length == 6) {
+          index.push([
+            parseInt(l[0], 10),
+            parseInt(l[1], 10),
+            parseInt(l[2], 10),
+            parseInt(l[3], 10),
+            parseInt(l[4], 10),
+            parseInt(l[5], 10),
+          ]);
+        }
+      });
+      return index;
+    });
+  }
+
+  loadCramHeader_() {
+    const file_definition_length = 26;
+    const max_header_length = 23;
+    var checked_stream = this.cram_
+      .load(0, file_definition_length + max_header_length)
+      .then((arrBuf) => {
+        return new CramStream(arrBuf);
+      })
+      .then((stream) => {
+        // process file definition
+        // check file signature
+        var head = stream.readString(4);
+        var version = new Uint8Array(stream.read(2));
+        if (head !== "CRAM" || version[0] !== 3 || version[1] !== 0) {
+          throw "[invalid file signature] This file is not CRAM 3.0 file.";
+        }
+        // read file id
+        this.fileid_ = stream.readString(20);
+        return stream;
+      });
+    var container = checked_stream.then((stream) => {
+      // read container
+      var container = new CramContainer(stream, 26);
+      container.readHeader();
+      return container;
+    });
+    var additional_buffer = container.then((container) => {
+      return this.cram_.load(
+        file_definition_length + max_header_length,
+        container.getHeaderLength() + container.landmarks[1] - max_header_length
+      );
+    });
+    return Promise.all([checked_stream, container, additional_buffer]).then(
+      (values) => {
+        var stream = values[0];
+        var container = values[1];
+        var ab = values[2];
+
+        stream.concat(ab);
+        var block = stream.readBlock(
+          container.getPosition() + container.getHeaderLength()
+        );
+        var txt = block.get("IO").readString(block.get("rawSize"));
+
+        // create list of chrname
+        var list = [];
+        txt.split("\n").forEach((line) => {
+          var words = line.split(RegExp(/\t|:/));
+          if (words[0] == "@SQ") {
+            list.push(words[words.indexOf("SN") + 1]);
+          }
         });
-        return result
+        return list;
+      }
+    );
+  }
+
+  loadAllRecordsInSlice_(slice_index) {
+    var container = this.loadContainer_(slice_index[3]);
+    var arrbuf = container.then((container) => {
+      return this.loadSlice_(slice_index, container);
+    });
+    return Promise.all([container, arrbuf]).then((values) => {
+      var slice = new CramSlice(values[0], values[1]);
+      return slice.loadRecords();
+    });
+  }
+
+  loadContainer_(pos) {
+    if (this.containers_.has(pos)) {
+      return this.containers_get(pos);
     }
+    const first_load_length = 4 + 5 * 4 + 9 * 2 + 5 * 2;
+    // = 52 (int32, itf8 * 4 + ltf8 * 2 + itf8 * 2)
+    var container = this.cram_
+      .load(pos, first_load_length)
+      .then((arrBuf) => {
+        return new CramStream(arrBuf);
+      })
+      .then((stream) => {
+        var container = new CramContainer(stream, pos);
+        container.length = container.cram.readInt32();
+        container.refSeqId = container.cram.readItf8();
+        container.startingRefPos = container.cram.readItf8();
+        container.alignmentSpan = container.cram.readItf8();
+        container.numberOfRecords = container.cram.readItf8();
+        container.recordCounter = container.cram.readLtf8();
+        container.bases = container.cram.readLtf8();
+        container.numberOfBlocks = container.cram.readItf8();
+        container.landmarkscount = container.cram.readItf8();
+        return container;
+      });
+    var second_load_length = container.then((container) => {
+      return 5 * container.landmarkscount + 4; // itf8 * count + Uint32
+    });
+    var second_buffer = second_load_length.then((sll) => {
+      return this.cram_.load(pos + first_load_length, sll);
+    });
+    var compression_header_length = Promise.all([
+      container,
+      second_buffer,
+    ]).then((values) => {
+      var container = values[0];
+      var buffer = values[1];
+
+      container.cram.concat(buffer);
+      var list = [];
+      for (var i = 0; i < container.landmarkscount; i++) {
+        list.push(container.cram.readItf8());
+      }
+      container.landmarks = list;
+      container.crc32 = container.cram.readUint32();
+      container.headerLength = container.cram.tell();
+      return container.landmarks[0];
+    });
+    var third_buffer = Promise.all([
+      container,
+      compression_header_length,
+      second_load_length,
+    ]).then((values) => {
+      var container = values[0];
+      var chl = values[1];
+      var sll = values[2];
+
+      const third_load_length =
+        chl + container.getHeaderLength() - first_load_length - sll;
+      return this.cram_.load(pos + first_load_length + sll, third_load_length);
+    });
+    this.containers_.set(pos, container);
+    return Promise.all([container, third_buffer]).then((values) => {
+      var container = values[0];
+      var buf = values[1];
+
+      container.cram.concat(buf);
+      container.getCompressionHeaderBlock();
+      return container;
+    });
+  }
+
+  loadSlice_(slice_index, container) {
+    const slice_pos =
+      slice_index[3] + container.getHeaderLength() + slice_index[4];
+    const slice_length = slice_index[5];
+    return this.cram_.load(slice_pos, slice_length);
+  }
+
+  filterRecord_(id, start, end, records) {
+    // find reads match with id, start and end
+    var filtered = [];
+    records.forEach((read) => {
+      if (
+        read.refSeqId == id &&
+        read.position <= end &&
+        read.position + read.readLength >= start
+      ) {
+        filtered.push(read);
+      }
+    });
+    return filtered;
+  }
+
+  decorateRecords_(chr_list, record) {
+    record.refSeqName = chr_list[record.refSeqId];
+    record.restoreCigar();
+  }
 }
