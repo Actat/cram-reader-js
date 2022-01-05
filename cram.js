@@ -32,11 +32,12 @@ class Cram {
           // find slices which match with chr name, start and end
           index.forEach((s) => {
             if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
-              var all_records = this.loadAllRecordsInSlice_(s);
-              var records_have_pushed = all_records.then((records) => {
-                var filtered = this.filterRecord_(id, start, end, records);
-                record_lists.push(filtered);
-              });
+              var records_have_pushed = this.loadAllRecordsInSlice_(s).then(
+                (records) => {
+                  var filtered = this.filterRecord_(id, start, end, records);
+                  record_lists.push(filtered);
+                }
+              );
               promises.push(records_have_pushed);
             }
           });
