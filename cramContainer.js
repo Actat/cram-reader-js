@@ -1,5 +1,5 @@
 class CramContainer {
-  constructor(cram, pos) {
+  constructor(/*CramStream*/ cram, pos) {
     this.cram = cram;
     this.pos = pos;
   }
@@ -30,11 +30,11 @@ class CramContainer {
     return d;
   }
 
-  async getCompressionHeaderBlock() {
+  getCompressionHeaderBlock() {
     if (typeof this.compressionHeaderBlock !== "undefined") {
       return this.compressionHeaderBlock;
     }
-    var b = await this.cram.readBlock(this.headerLength);
+    var b = this.cram.readBlock(this.headerLength);
     var chb = new Map();
     const data = b.get("IO");
     // preservation map
@@ -43,20 +43,17 @@ class CramContainer {
       chb.get("pm").set("RN", true);
       chb.get("pm").set("AP", true);
       chb.get("pm").set("RR", true);
-      const size = await data.readItf8();
-      const number = await data.readItf8();
+      const size = data.readItf8();
+      const number = data.readItf8();
       for (var i = 0; i < number; i++) {
-        const k = String.fromCharCode.apply(
-          "",
-          new Uint8Array(await data.read(2))
-        );
+        const k = String.fromCharCode.apply("", new Uint8Array(data.read(2)));
         var v;
         if (k == "RN" || k == "AP" || k == "RR") {
-          v = await data.readBoolean();
+          v = data.readBoolean();
         } else if (k == "SM") {
-          v = await data.read(5);
+          v = data.read(5);
         } else if (k == "TD") {
-          v = this.decodeTagDictionary(await data.readArrayByte());
+          v = this.decodeTagDictionary(data.readArrayByte());
         } else {
           continue;
         }
@@ -66,13 +63,10 @@ class CramContainer {
     // data series encodings
     {
       chb.set("dse", new Map());
-      const size = await data.readItf8();
-      const number = await data.readItf8();
+      const size = data.readItf8();
+      const number = data.readItf8();
       for (var i = 0; i < number; i++) {
-        const k = String.fromCharCode.apply(
-          "",
-          new Uint8Array(await data.read(2))
-        );
+        const k = String.fromCharCode.apply("", new Uint8Array(data.read(2)));
         var v;
         if (
           [
@@ -97,11 +91,11 @@ class CramContainer {
             "MQ",
           ].includes(k)
         ) {
-          v = await data.readEncodingInt();
+          v = data.readEncodingInt();
         } else if (["RN", "BB", "QQ", "IN", "SC"].includes(k)) {
-          v = await data.readEncodingByteArray();
+          v = data.readEncodingByteArray();
         } else if (["FC", "BS", "BA", "QS"].includes(k)) {
-          v = await data.readEncodingByte();
+          v = data.readEncodingByte();
         } else {
           continue;
         }
@@ -111,16 +105,16 @@ class CramContainer {
     // tag encoding map
     {
       chb.set("tv", new Map());
-      const size = await data.readItf8();
-      const number = await data.readItf8();
+      const size = data.readItf8();
+      const number = data.readItf8();
       for (var i = 0; i < number; i++) {
-        const k = await data.readItf8();
+        const k = data.readItf8();
         const key = String.fromCharCode(
           (k & 0xff0000) >> 16,
           (k & 0xff00) >> 8,
           k & 0xff
         );
-        const v = await data.readEncodingByteArray();
+        const v = data.readEncodingByteArray();
         chb.get("tv").set(key, v);
       }
     }
@@ -129,7 +123,7 @@ class CramContainer {
     return this.compressionHeaderBlock;
   }
 
-  async readHeader() {
+  readHeader() {
     this.cram.seek(this.pos);
     this.length = this.cram.readInt32();
     this.refSeqId = this.cram.readItf8();
