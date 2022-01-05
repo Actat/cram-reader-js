@@ -38,7 +38,10 @@ class FileHandler {
           reject("An error occurred during HTTP access");
         };
         oReq.onabort = function () {
-          reject("HTTP access  is aborted.");
+          reject("HTTP access is aborted.");
+        };
+        oReq.timeout = function () {
+          reject("HTTP access timed out.");
         };
         oReq.send();
       }
