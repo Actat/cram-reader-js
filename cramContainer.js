@@ -1,11 +1,11 @@
 class CramContainer {
   constructor(/*CramStream*/ cram, pos) {
     this.cram = cram;
-    this.pos = pos;
+    this.pos_ = pos;
   }
 
   getPosition() {
-    return this.pos;
+    return this.pos_;
   }
 
   getHeaderLength() {
@@ -124,7 +124,7 @@ class CramContainer {
   }
 
   readHeader() {
-    this.cram.seek(this.pos);
+    this.cram.seek(this.pos_);
     this.length = this.cram.readInt32();
     this.refSeqId = this.cram.readItf8();
     this.startingRefPos = this.cram.readItf8();
@@ -135,6 +135,6 @@ class CramContainer {
     this.numberOfBlocks = this.cram.readItf8();
     this.landmarks = this.cram.readArrayItf8();
     this.crc32 = this.cram.readUint32();
-    this.headerLength = this.cram.tell() - this.pos;
+    this.headerLength = this.cram.tell() - this.pos_;
   }
 }
