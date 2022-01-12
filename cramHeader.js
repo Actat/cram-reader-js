@@ -21,19 +21,22 @@ class CramHeader extends CramContainer {
       });
     }
 
-    var block = this.stream_.readBlock(this.pos_ + this.header_length_);
-    var txt = block.get("IO").readString(block.get("rawSize"));
+    var p = new Promise((resolve, reject) => {
+      var block = this.stream_.readBlock(this.pos_ + this.header_length_);
+      var txt = block.get("IO").readString(block.get("rawSize"));
 
-    // create list of chrname
-    var list = [];
-    txt.split("\n").forEach((line) => {
-      var words = line.split(RegExp(/\t|:/));
-      if (words[0] == "@SQ") {
-        list.push(words[words.indexOf("SN") + 1]);
-      }
+      // create list of chrname
+      var list = [];
+      txt.split("\n").forEach((line) => {
+        var words = line.split(RegExp(/\t|:/));
+        if (words[0] == "@SQ") {
+          list.push(words[words.indexOf("SN") + 1]);
+        }
+      });
+      resolve(list);
     });
-    this.chr_list = list;
-    return list;
+    this.chr_list = p;
+    return p;
   }
 
   loadHeader_() {
