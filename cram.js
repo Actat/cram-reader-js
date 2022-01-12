@@ -131,7 +131,7 @@ class Cram {
   }
 
   loadSlice_(slice_index, container) {
-    return container.getHeaderLength().then((length) => {
+    return container.loadHeaderLength().then((length) => {
       const slice_pos = slice_index[3] + length + slice_index[4];
       const slice_length = slice_index[5];
       return this.cram_.load(slice_pos, slice_length);

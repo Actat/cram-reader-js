@@ -14,7 +14,7 @@ class CramContainer {
     return this.pos_;
   }
 
-  getHeaderLength() {
+  loadHeaderLength() {
     return this.header_length_;
   }
 
