@@ -8,31 +8,29 @@ class CramDataContainer extends CramContainer {
     if (this.compression_header_) {
       return this.compression_header_;
     }
-
-    if (this.header_length_) {
-      this.third_load_length_ =
-        this.landmarks[0] +
-        this.header_length_ -
-        this.first_load_length_ -
-        this.second_load_length_;
-      return this.file_
-        .load(
+    return this.header_length_
+      .then((header_length) => {
+        this.third_load_length_ =
+          this.landmarks[0] +
+          header_length -
+          this.first_load_length_ -
+          this.second_load_length_;
+      })
+      .then(() => {
+        return this.file_.load(
           this.pos_ + this.first_load_length_ + this.second_load_length_,
           this.third_load_length_
-        )
-        .then((third_buffer) => {
-          this.stream_.concat(third_buffer);
-          return this.readCompressionHeaderBlock_();
-        });
-    }
-
-    return this.loadHeader_().then(() => {
-      return this.loadCompressionHeaderBlock();
-    });
+        );
+      })
+      .then((third_buffer) => {
+        this.stream_.concat(third_buffer);
+        return this.readCompressionHeaderBlock_();
+      });
   }
 
-  readCompressionHeaderBlock_() {
-    var b = this.stream_.readBlock(this.header_length_);
+  async readCompressionHeaderBlock_() {
+    var header_length = await this.header_length_;
+    var b = this.stream_.readBlock(header_length);
     var chb = new Map();
     const data = b.get("IO");
     // preservation map

@@ -2,12 +2,12 @@ class CramContainer {
   constructor(/*FileHandler*/ cram, pos) {
     this.file_ = cram;
     this.pos_ = pos;
-    this.header_length_ = undefined;
     this.stream_ = undefined;
     this.first_load_length_ = 4 + 5 * 4 + 9 * 2 + 5 * 2;
     // = 52 (int32, itf8 * 4 + ltf8 * 2 + itf8 * 2)
     this.second_load_length_ = undefined;
     this.third_load_length_ = undefined;
+    this.header_length_ = this.loadHeader_();
   }
 
   getPosition() {
@@ -15,9 +15,7 @@ class CramContainer {
   }
 
   getHeaderLength() {
-    return this.loadHeader_().then(() => {
-      return this.header_length_;
-    });
+    return this.header_length_;
   }
 
   loadHeader_() {
@@ -57,8 +55,7 @@ class CramContainer {
         }
         this.landmarks = list;
         this.crc32 = this.stream_.readUint32();
-        this.header_length_ = this.stream_.tell();
-        return this.header_length_;
+        return this.stream_.tell();
       });
   }
 }

@@ -2,6 +2,7 @@ class CramHeader extends CramContainer {
   constructor(/*FileHandler*/ cram) {
     super(cram, 26);
 
+    this.header_length_ = this.loadHeader_();
     this.fileid = undefined;
     this.chr_list = undefined;
     this.file_definition_length_ = 26;
@@ -21,8 +22,8 @@ class CramHeader extends CramContainer {
       });
     }
 
-    var p = new Promise((resolve, reject) => {
-      var block = this.stream_.readBlock(this.pos_ + this.header_length_);
+    var p = this.header_length_.then((header_length) => {
+      var block = this.stream_.readBlock(this.pos_ + header_length);
       var txt = block.get("IO").readString(block.get("rawSize"));
 
       // create list of chrname
@@ -33,14 +34,14 @@ class CramHeader extends CramContainer {
           list.push(words[words.indexOf("SN") + 1]);
         }
       });
-      resolve(list);
+      return list;
     });
     this.chr_list = p;
     return p;
   }
 
   loadHeader_() {
-    return this.file_
+    var head_len = this.file_
       .load(0, this.first_load_length_)
       .then((arrBuf) => {
         this.stream_ = new CramStream(arrBuf);
@@ -66,19 +67,17 @@ class CramHeader extends CramContainer {
         this.number_blocks = this.stream_.readItf8();
         this.landmarks = this.stream_.readArrayItf8();
         this.crc32 = this.stream_.readUint32();
-        this.header_length_ =
-          this.stream_.tell() - this.file_definition_length_;
-
-        this.second_load_length_ =
-          this.header_length_ + this.landmarks[1] - this.max_header_length_;
-        return this.file_.load(
-          this.first_load_length_,
-          this.second_load_length_
-        );
-      })
-      .then((second_buffer) => {
-        this.stream_.concat(second_buffer);
-        return this.header_length_;
+        var header_length = this.stream_.tell() - this.file_definition_length_;
+        return header_length;
       });
+    var second_buf = head_len.then((header_length) => {
+      this.second_load_length_ =
+        header_length + this.landmarks[1] - this.max_header_length_;
+      return this.file_.load(this.first_load_length_, this.second_load_length_);
+    });
+    return Promise.all([head_len, second_buf]).then((values) => {
+      this.stream_.concat(values[1]);
+      return values[0];
+    });
   }
 }
