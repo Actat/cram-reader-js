@@ -20,8 +20,8 @@ class CramDataContainer extends CramContainer {
           this.pos_ + this.first_load_length_ + this.second_load_length_,
           this.third_load_length_
         )
-        .then((therd_buffer) => {
-          this.stream_.concat(therd_buffer);
+        .then((third_buffer) => {
+          this.stream_.concat(third_buffer);
           return this.readCompressionHeaderBlock_();
         });
     }
