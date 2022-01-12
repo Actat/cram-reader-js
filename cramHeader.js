@@ -2,13 +2,13 @@ class CramHeader extends CramContainer {
   constructor(/*FileHandler*/ cram) {
     super(cram, 26);
 
-    this.header_length_ = this.loadHeader_();
     this.fileid = undefined;
     this.chr_list = undefined;
     this.file_definition_length_ = 26;
     this.max_header_length_ = 23;
     this.first_load_length_ =
       this.file_definition_length_ + this.max_header_length_;
+    this.header_length_ = this.loadHeader_();
   }
 
   loadChrList() {
