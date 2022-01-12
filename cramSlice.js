@@ -23,7 +23,7 @@ class CramSlice {
       await this.decodeNames_(r);
       await this.decodeMateData_(r);
       await this.decodeTagData_(r);
-      if ((r.bf & 4) == 0) {
+      if ((r.getBf() & 4) == 0) {
         await this.decodeMappedRead_(r);
       } else {
         await this.decodeUnmappedRead_(r);
@@ -171,14 +171,14 @@ class CramSlice {
   }
 
   async decodeMateData_(r) {
-    if ((r.cf & 2) == 2) {
+    if ((r.getCf() & 2) == 2) {
       // the next fragment is not in the current slice
       const mateFlag = await this.readItem_("MF", "Int");
       if ((mateFlag & 1) == 1) {
-        r.bf = r.bf | 0x20;
+        r.setBf(r.getBf() | 0x20);
       }
       if ((mateFlag & 2) == 2) {
-        r.bf = r.bf | 0x08;
+        r.setBf(r.getBf() | 0x08);
       }
       var header = await this.container_.loadCompressionHeaderBlock();
       if (header.get("content").get("pm").get("RN") == false) {
@@ -188,7 +188,7 @@ class CramSlice {
       r.mateRefId = await this.readItem_("NS", "Int");
       r.matePos = await this.readItem_("NP", "Int");
       r.templateSize = await this.readItem_("TS", "Int");
-    } else if ((r.cf & 4) == 4) {
+    } else if ((r.getCf() & 4) == 4) {
       r.nextFrag = await this.readItem_("NF", "Int");
     }
   }
@@ -279,8 +279,7 @@ class CramSlice {
     } else if (f.get("FC") == "Q") {
       f.set("QS", await this.readItem_("QS", "Byte"));
     }
-    r.features.push(f);
-    r.sortFeatures();
+    r.pushFeature(f);
   }
 
   async decodeUnmappedRead_(r) {
@@ -307,14 +306,14 @@ class CramSlice {
   decodeTotalMateData_(records) {
     for (var i = 0; i < records.length; i++) {
       var r = records[i];
-      if ((r.cf & 4) == 4) {
+      if ((r.getCf() & 4) == 4) {
         // mate is downstream
         var n = records[i + r.nextFrag + 1]; // n is next_fragment
-        if ((n.bf & 0x10) == 0x10) {
-          r.bf = r.bf | 0x20;
+        if ((n.getBf() & 0x10) == 0x10) {
+          r.setBf(r.getBf() | 0x20);
         }
-        if ((n.bf & 0x04) == 0x04) {
-          r.bf = r.bf | 0x08;
+        if ((n.getBf() & 0x04) == 0x04) {
+          r.setBf(r.getBf() | 0x08);
         }
         // read name of mate record
         r.mateReadName = n.readName;
@@ -337,9 +336,9 @@ class CramSlice {
           n.readLength - (n.hasSoftclip() ? n.features.get("S").length : 0); // mapped bases
         var l = [
           r.position,
-          r.position + ((r.bf & 0x10) != 0x10 ? rmb - 1 : -rmb + 1),
+          r.position + ((r.getBf() & 0x10) != 0x10 ? rmb - 1 : -rmb + 1),
           n.position,
-          n.position - ((n.bf & 0x10) != 0x10 ? nmb - 1 : -nmb + 1),
+          n.position - ((n.getBf() & 0x10) != 0x10 ? nmb - 1 : -nmb + 1),
         ];
         var leftmost = Math.min(...l);
         var rightmost = Math.max(...l);
