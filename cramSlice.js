@@ -1,45 +1,41 @@
 class CramSlice {
   constructor(container, arr_buf) {
     this.container_ = container;
-    this.str_ = new CramStream(arr_buf);
+    this.stream_ = new CramStream(arr_buf);
     this.slice_header_ = undefined;
     this.block_list_ = [];
   }
 
-  loadRecords() {
-    return new Promise((resolve, reject) => {
-      this.loadSliceHeaderBlock_();
-      this.loadBlocks_();
-      this.block_list_[0].set(
-        "IO",
-        new BitsIO(this.block_list_[0].get("IO").arrayBuffer())
-      );
-      const n_records = this.slice_header_
-        .get("content")
-        .get("numberOfRecords");
-      var records = [];
-      for (var i = 0; i < n_records; i++) {
-        var bf = this.readItem_("BF", "Int");
-        var cf = this.readItem_("CF", "Int");
-        var r = new CramRecord(bf, cf);
-        this.decodePositions_(r);
-        this.decodeNames_(r);
-        this.decodeMateData_(r);
-        this.decodeTagData_(r);
-        if ((r.bf & 4) == 0) {
-          this.decodeMappedRead_(r);
-        } else {
-          this.decodeUnmappedRead_(r);
-        }
-        records.push(r);
+  async loadRecords() {
+    this.loadSliceHeaderBlock_();
+    this.loadBlocks_();
+    this.block_list_[0].set(
+      "IO",
+      new BitsIO(this.block_list_[0].get("IO").arrayBuffer())
+    );
+    const n_records = this.slice_header_.get("content").get("numberOfRecords");
+    var records = [];
+    for (var i = 0; i < n_records; i++) {
+      var bf = await this.readItem_("BF", "Int");
+      var cf = await this.readItem_("CF", "Int");
+      var r = new CramRecord(bf, cf);
+      await this.decodePositions_(r);
+      await this.decodeNames_(r);
+      await this.decodeMateData_(r);
+      await this.decodeTagData_(r);
+      if ((r.bf & 4) == 0) {
+        await this.decodeMappedRead_(r);
+      } else {
+        await this.decodeUnmappedRead_(r);
       }
-      this.decodeTotalMateData_(records);
-      resolve(records);
-    });
+      records.push(r);
+    }
+    this.decodeTotalMateData_(records);
+    return records;
   }
 
   loadSliceHeaderBlock_() {
-    var b = this.str_.readBlock(0);
+    var b = this.stream_.readBlock(0);
     var data = b.get("IO");
     b.set("content", new Map());
     b.get("content").set("refSeqId", data.readItf8());
@@ -60,20 +56,18 @@ class CramSlice {
     const n_blocks =
       1 + this.slice_header_.get("content").get("blockContentIds").length; // +1 for core data block
     var blocks = [];
-    this.str_.seek(this.slice_header_.get("blockSize"));
+    this.stream_.seek(this.slice_header_.get("blockSize"));
     for (var i = 0; i < n_blocks; i++) {
-      var b = this.str_.readBlock();
+      var b = this.stream_.readBlock();
       blocks.push(b);
     }
     this.block_list_ = blocks;
     return blocks;
   }
 
-  readItem_(key, type) {
-    var codec = this.container_.compressionHeaderBlock
-      .get("content")
-      .get("dse")
-      .get(key);
+  async readItem_(key, type) {
+    var header = await this.container_.loadCompressionHeaderBlock();
+    var codec = header.get("content").get("dse").get(key);
     return this.decodeItem_(codec, type);
   }
 
@@ -132,39 +126,34 @@ class CramSlice {
     return this.block_list_[index + 1]; // +1 for core data block
   }
 
-  decodePositions_(r) {
+  async decodePositions_(r) {
     if (this.slice_header_.get("content").get("refSeqId") == -2) {
-      r.refSeqId = this.readItem_("RI", "Int");
+      r.refSeqId = await this.readItem_("RI", "Int");
     } else {
       r.refSeqId = this.slice_header_.get("content").get("refSeqid");
     }
-    r.readLength = this.readItem_("RL", "Int");
-    if (
-      this.container_.compressionHeaderBlock
-        .get("content")
-        .get("pm")
-        .get("AP") != 0
-    ) {
+    r.readLength = await this.readItem_("RL", "Int");
+    var header = await this.container_.loadCompressionHeaderBlock();
+    if (header.get("content").get("pm").get("AP") != 0) {
       if (typeof this.last_position_ == "undefined") {
         this.last_position_ = this.slice_header_
           .get("content")
           .get("alignmentStart");
       }
-      var p = this.readItem_("AP", "Int");
+      var p = await this.readItem_("AP", "Int");
       r.position = p + this.last_position_;
       this.last_position_ = r.position;
     } else {
-      var p = this.readItem_("AP", "Int");
+      var p = await this.readItem_("AP", "Int");
       r.position = p;
     }
-    r.readGroup = this.readItem_("RG", "Int");
+    r.readGroup = await this.readItem_("RG", "Int");
   }
 
-  decodeNames_(r) {
-    if (
-      this.container_.compressionHeaderBlock.get("content").get("pm").get("RN")
-    ) {
-      var rn = this.readItem_("RN", "ByteArray");
+  async decodeNames_(r) {
+    var header = await this.container_.loadCompressionHeaderBlock();
+    if (header.get("content").get("pm").get("RN")) {
+      var rn = await this.readItem_("RN", "ByteArray");
       var name = "";
       rn.forEach((elem) => {
         name += String.fromCharCode(elem);
@@ -181,40 +170,37 @@ class CramSlice {
     return generatedName;
   }
 
-  decodeMateData_(r) {
+  async decodeMateData_(r) {
     if ((r.cf & 2) == 2) {
       // the next fragment is not in the current slice
-      const mateFlag = this.readItem_("MF", "Int");
+      const mateFlag = await this.readItem_("MF", "Int");
       if ((mateFlag & 1) == 1) {
         r.bf = r.bf | 0x20;
       }
       if ((mateFlag & 2) == 2) {
         r.bf = r.bf | 0x08;
       }
-      if (
-        this.container_.compressionHeaderBlock
-          .get("content")
-          .get("pm")
-          .get("RN") == false
-      ) {
-        rn = this.readItem_("RN", "ByteArray");
+      var header = await this.container_.loadCompressionHeaderBlock();
+      if (header.get("content").get("pm").get("RN") == false) {
+        rn = await this.readItem_("RN", "ByteArray");
         r.readName = String(rn);
       }
-      r.mateRefId = this.readItem_("NS", "Int");
-      r.matePos = this.readItem_("NP", "Int");
-      r.templateSize = this.readItem_("TS", "Int");
+      r.mateRefId = await this.readItem_("NS", "Int");
+      r.matePos = await this.readItem_("NP", "Int");
+      r.templateSize = await this.readItem_("TS", "Int");
     } else if ((r.cf & 4) == 4) {
-      r.nextFrag = this.readItem_("NF", "Int");
+      r.nextFrag = await this.readItem_("NF", "Int");
     }
   }
 
-  decodeTagData_(r) {
-    const tagLine = this.readItem_("TL", "Int");
+  async decodeTagData_(r) {
+    const tagLine = await this.readItem_("TL", "Int");
+    var header = await this.container_.loadCompressionHeaderBlock();
     var tags = {};
     const readTagFunc = (elm) => {
       var name = elm.slice(0, 2);
       const tagType = elm.slice(-1);
-      var values_encoding = this.container_.compressionHeaderBlock
+      var values_encoding = header
         .get("content")
         .get("tv")
         .get(elm)
@@ -245,84 +231,75 @@ class CramSlice {
       }
       tags[elm] = tag_value;
     };
-    for (var elm of this.container_.compressionHeaderBlock
-      .get("content")
-      .get("pm")
-      .get("TD")[tagLine])
+    for (var elm of header.get("content").get("pm").get("TD")[tagLine])
       readTagFunc(elm);
     r.tags = tags;
   }
 
-  decodeMappedRead_(r) {
-    const featureNumber = this.readItem_("FN", "Int");
+  async decodeMappedRead_(r) {
+    const featureNumber = await this.readItem_("FN", "Int");
     for (var i = 0; i < featureNumber; i++) {
-      this.decodeFeature_(r);
+      await this.decodeFeature_(r);
     }
-    r.mappingQuality = this.readItem_("MQ", "Int");
-    if (
-      this.container_.compressionHeaderBlock.get("content").get("dse").has("QS")
-    ) {
-      r.qualityScore = this.readQualityScore_(r.readLength);
+    r.mappingQuality = await this.readItem_("MQ", "Int");
+    var header = await this.container_.loadCompressionHeaderBlock();
+    if (header.get("content").get("dse").has("QS")) {
+      r.qualityScore = await this.readQualityScore_(r.readLength);
     }
   }
 
-  decodeFeature_(r) {
+  async decodeFeature_(r) {
     var f = new Map();
-    f.set(
-      "FC",
-      String.fromCharCode.apply(
-        "",
-        new Uint8Array(this.readItem_("FC", "Byte"))
-      )
-    );
-    f.set("FP", this.readItem_("FP", "Int"));
+    var byte = await this.readItem_("FC", "Byte");
+    f.set("FC", String.fromCharCode.apply("", new Uint8Array(byte)));
+    f.set("FP", await this.readItem_("FP", "Int"));
     if (f.get("FC") == "B") {
-      f.set("BA", this.readItem_("BA", "Byte"));
-      f.set("QS", this.readItem_("QS", "Byte"));
+      f.set("BA", await this.readItem_("BA", "Byte"));
+      f.set("QS", await this.readItem_("QS", "Byte"));
     } else if (f.get("FC") == "X") {
-      f.set("BS", this.readItem_("BS", "Byte"));
+      f.set("BS", await this.readItem_("BS", "Byte"));
     } else if (f.get("FC") == "I") {
-      f.set("IN", this.readItem_("IN", "ByteArray"));
+      f.set("IN", await this.readItem_("IN", "ByteArray"));
     } else if (f.get("FC") == "S") {
-      f.set("SC", this.readItem_("SC", "ByteArray"));
+      f.set("SC", await this.readItem_("SC", "ByteArray"));
     } else if (f.get("FC") == "H") {
-      f.set("HC", this.readItem_("HC", "Int"));
+      f.set("HC", await this.readItem_("HC", "Int"));
     } else if (f.get("FC") == "P") {
-      f.set("PD", this.readItem_("PD", "Int"));
+      f.set("PD", await this.readItem_("PD", "Int"));
     } else if (f.get("FC") == "D") {
-      f.set("DL", this.readItem_("DL", "Int"));
+      f.set("DL", await this.readItem_("DL", "Int"));
     } else if (f.get("FC") == "N") {
-      f.set("RS", this.readItem_("RS", "Int"));
+      f.set("RS", await this.readItem_("RS", "Int"));
     } else if (f.get("FC") == "i") {
-      f.set("BA", this.readItem_("BA", "Byte"));
+      f.set("BA", await this.readItem_("BA", "Byte"));
     } else if (f.get("FC") == "b") {
-      f.set("BB", this.readItem_("BB", "ByteArray"));
+      f.set("BB", await this.readItem_("BB", "ByteArray"));
     } else if (f.get("FC") == "q") {
-      f.set("QQ", this.readItem_("QQ", "ByteArray"));
+      f.set("QQ", await this.readItem_("QQ", "ByteArray"));
     } else if (f.get("FC") == "Q") {
-      f.set("QS", this.readItem_("QS", "Byte"));
+      f.set("QS", await this.readItem_("QS", "Byte"));
     }
     r.features.push(f);
     r.sortFeatures();
   }
 
-  decodeUnmappedRead_(r) {
+  async decodeUnmappedRead_(r) {
     b = new Array(r.readLength);
     for (var i = 0; i < r.readLength; i++) {
-      b[i] = this.readItem_("BA", "Byte");
+      b[i] = await this.readItem_("BA", "Byte");
     }
     r.base = b;
-    if (
-      this.container_.compressionHeaderBlock.get("content").get("dse").has("QS")
-    ) {
-      r.qualityScore = this.readQualityScore_(r.readLength);
+    var header = await this.container_.loadCompressionHeaderBlock();
+    if (header.get("content").get("dse").has("QS")) {
+      r.qualityScore = await this.readQualityScore_(r.readLength);
     }
   }
 
-  readQualityScore_(readLength) {
+  async readQualityScore_(readLength) {
     var qs = new Array(readLength);
     for (var i = 0; i < readLength; i++) {
-      qs[i] = this.readItem_("QS", "Int") + 33; // +33 to match chr with samtools
+      var int = await this.readItem_("QS", "Int");
+      qs[i] = int + 33; // +33 to match chr with samtools
     }
     return String.fromCharCode.apply("", qs);
   }
