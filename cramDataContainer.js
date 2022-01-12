@@ -26,7 +26,7 @@ class CramDataContainer extends CramContainer {
         });
     }
 
-    return this.loadHeader().then(() => {
+    return this.loadHeader_().then(() => {
       return this.loadCompressionHeaderBlock();
     });
   }

@@ -16,7 +16,7 @@ class CramHeader extends CramContainer {
     }
 
     if (typeof this.fileid === "undefined") {
-      return this.loadHeader().then(() => {
+      return this.loadHeader_().then(() => {
         return this.loadChrList();
       });
     }
@@ -36,7 +36,7 @@ class CramHeader extends CramContainer {
     return list;
   }
 
-  loadHeader() {
+  loadHeader_() {
     return this.file_
       .load(0, this.first_load_length_)
       .then((arrBuf) => {

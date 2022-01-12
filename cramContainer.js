@@ -15,12 +15,12 @@ class CramContainer {
   }
 
   getHeaderLength() {
-    return this.loadHeader().then(() => {
+    return this.loadHeader_().then(() => {
       return this.header_length_;
     });
   }
 
-  loadHeader() {
+  loadHeader_() {
     return this.file_
       .load(this.pos_, this.first_load_length_)
       .then((arrBuf) => {
