@@ -181,7 +181,7 @@ class CramSlice {
         r.setBf(r.getBf() | 0x08);
       }
       var header = await this.container_.loadCompressionHeaderBlock();
-      if (header.get("content").get("pm").get("RN") == false) {
+      if (!header.get("content").get("pm").get("RN")) {
         rn = await this.readItem_("RN", "ByteArray");
         r.readName = String(rn);
       }
