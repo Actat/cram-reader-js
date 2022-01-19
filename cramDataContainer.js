@@ -2,6 +2,7 @@ class CramDataContainer extends CramContainer {
   constructor(/*FileHandler*/ cram, pos) {
     super(cram, pos);
     this.compression_header_ = undefined;
+    this.header_length_ = this.loadHeader_();
   }
 
   loadCompressionHeaderBlock() {

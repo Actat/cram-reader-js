@@ -7,7 +7,7 @@ class CramContainer {
     // = 52 (int32, itf8 * 4 + ltf8 * 2 + itf8 * 2)
     this.second_load_length_ = undefined;
     this.third_load_length_ = undefined;
-    this.header_length_ = this.loadHeader_();
+    this.header_length_ = undefined;
   }
 
   getPosition() {
@@ -15,6 +15,9 @@ class CramContainer {
   }
 
   loadHeaderLength() {
+    if (typeof this.header_length_ === "undefined") {
+      this.header_length_ = this.loadHeader_();
+    }
     return this.header_length_;
   }
 
