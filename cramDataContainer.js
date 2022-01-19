@@ -9,7 +9,7 @@ class CramDataContainer extends CramContainer {
     if (this.compression_header_) {
       return this.compression_header_;
     }
-    return this.header_length_
+    this.compression_header_ = this.header_length_
       .then((header_length) => {
         this.third_load_length_ =
           this.landmarks[0] +
@@ -27,6 +27,7 @@ class CramDataContainer extends CramContainer {
         this.stream_.concat(third_buffer);
         return this.readCompressionHeaderBlock_();
       });
+    return this.compression_header_;
   }
 
   async readCompressionHeaderBlock_() {
@@ -116,8 +117,7 @@ class CramDataContainer extends CramContainer {
       }
     }
     b.set("content", chb);
-    this.compression_header_ = b;
-    return this.compression_header_;
+    return b;
   }
 
   decodeTagDictionary(arrBuf) {
