@@ -1,3 +1,15 @@
+window.onload = function () {
+  let elmL = document.getElementById("button_local");
+  elmL.addEventListener("click", (e) => {
+    testLocal();
+  });
+
+  let elmR = document.getElementById("button_remote");
+  elmR.addEventListener("click", (e) => {
+    testRemote();
+  });
+};
+
 function testLocal() {
   const chr = document.forms.formLocal.chrnameLocal.value;
   const start = document.forms.formLocal.startLocal.value;
