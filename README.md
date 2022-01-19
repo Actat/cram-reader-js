@@ -4,7 +4,7 @@ This is a cram file handling module to make [KERO-browse](https://github.com/DBK
 
 ## Usage
 
-```
+```js
 // For local file
 // cram and crai are File objects (https://developer.mozilla.org/docs/Web/API/File), and form tag in html gives this type of object.
 var cram = File(bits, name);
