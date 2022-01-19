@@ -7,8 +7,8 @@ class CramSlice {
   }
 
   async loadRecords() {
-    this.loadSliceHeaderBlock_();
-    this.loadBlocks_();
+    this.getSliceHeaderBlock_();
+    this.getBlocks_();
     this.block_list_[0].set(
       "IO",
       new BitsIO(this.block_list_[0].get("IO").arrayBuffer())
@@ -34,7 +34,7 @@ class CramSlice {
     return records;
   }
 
-  loadSliceHeaderBlock_() {
+  getSliceHeaderBlock_() {
     var b = this.stream_.readBlock(0);
     var data = b.get("IO");
     b.set("content", new Map());
@@ -52,7 +52,7 @@ class CramSlice {
     return b;
   }
 
-  loadBlocks_() {
+  getBlocks_() {
     const n_blocks =
       1 + this.slice_header_.get("content").get("blockContentIds").length; // +1 for core data block
     var blocks = [];
