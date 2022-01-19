@@ -1,5 +1,9 @@
 class CramStream {
   constructor(arrbuf) {
+    if (!arrbuf) {
+      // when arrbuf is undefined
+      throw "[CramStream] Invalid argument: arrbuf is undefined (falsy)";
+    }
     this.buffer_ = arrbuf;
     this.index_ = 0;
   }
@@ -316,11 +320,13 @@ class CramStream {
       throw "bzip2 is not supported";
     } else if (result.get("method") == 3) {
       // lzma
-      throw "lzma is not supported ";
+      throw "lzma is not supported";
     } else if (result.get("method") == 4) {
       // rans
       var cr = new CramRans(data);
       raw_data = cr.ransDecode();
+    } else {
+      throw "unknown compression method";
     }
     result.set("IO", new CramStream(raw_data));
     result.set("CRC32", this.readUint32());

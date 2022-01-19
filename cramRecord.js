@@ -1,12 +1,46 @@
 class CramRecord {
   constructor(bf, cf) {
-    this.bf = bf;
-    this.cf = cf;
-    this.features = new Array();
+    this.bf_ = bf;
+    this.cf_ = cf;
+    this.features_ = new Array();
+  }
+
+  getBf() {
+    return this.bf_;
+  }
+
+  getCf() {
+    return this.cf_;
+  }
+
+  setBf(bf) {
+    this.bf_ = bf;
+  }
+
+  pushFeature(feature) {
+    this.features_.push(feature);
+  }
+
+  toSAMString() {
+    var str = new String();
+    str += this.readName === undefined ? "" : this.readName;
+    str += "\t" + (this.bf_ === undefined ? "" : this.bf_);
+    str += "\t" + (this.refSeqName === undefined ? "" : this.refSeqName);
+    str += "\t" + (this.position === undefined ? "" : this.position);
+    str +=
+      "\t" + (this.mappingQuality === undefined ? "" : this.mappingQuality);
+    str += "\t" + (this.cigar === undefined ? "" : this.cigar);
+    str += "\t" + (this.mateReadName === undefined ? "" : this.mateReadName);
+    str += "\t" + (this.matePos === undefined ? "" : this.matePos);
+    str += "\t" + (this.templateSize === undefined ? "" : this.templateSize);
+    str += "\t" + (this.seq === undefined ? "" : this.seq) + "\t";
+    str += "\t" + (this.qualityScore === undefined ? "" : this.qualityScore);
+    str += "\t" + (this.tags === undefined ? "" : JSON.stringify(this.tags));
+    return str;
   }
 
   hasSoftclip() {
-    this.features.forEach((map) => {
+    this.features_.forEach((map) => {
       if (map.get("FC") == "S") {
         return true;
       }
@@ -14,17 +48,11 @@ class CramRecord {
     return false;
   }
 
-  sortFeatures() {
-    this.features.sort((a, b) => {
-      return a.get("FP") - b.get("FP");
-    });
-  }
-
   restoreCigar() {
-    this.sortFeatures();
+    this.sortFeatures_();
     if ("cigar" in this || !("readLength" in this)) {
       return;
-    } else if (this.features.length == 0) {
+    } else if (this.features_.length == 0) {
       this.cigar = String(this.readLength) + "M";
       return;
     } else {
@@ -34,7 +62,7 @@ class CramRecord {
       var lastOp = "";
       var lastOpLen = 0;
       var lastOpPos = 1;
-      this.features.forEach((feature) => {
+      this.features_.forEach((feature) => {
         var gap = feature.get("FP") - (lastOpPos + lastOpLen);
         if (gap > 0) {
           if (lastOp == "M") {
@@ -118,21 +146,9 @@ class CramRecord {
     }
   }
 
-  toSAMString() {
-    var str = new String();
-    str += this.readName === undefined ? "" : this.readName;
-    str += "\t" + (this.bf === undefined ? "" : this.bf);
-    str += "\t" + (this.refSeqName === undefined ? "" : this.refSeqName);
-    str += "\t" + (this.position === undefined ? "" : this.position);
-    str +=
-      "\t" + (this.mappingQuality === undefined ? "" : this.mappingQuality);
-    str += "\t" + (this.cigar === undefined ? "" : this.cigar);
-    str += "\t" + (this.mateReadName === undefined ? "" : this.mateReadName);
-    str += "\t" + (this.matePos === undefined ? "" : this.matePos);
-    str += "\t" + (this.templateSize === undefined ? "" : this.templateSize);
-    str += "\t" + (this.seq === undefined ? "" : this.seq) + "\t";
-    str += "\t" + (this.qualityScore === undefined ? "" : this.qualityScore);
-    str += "\t" + (this.tags === undefined ? "" : JSON.stringify(this.tags));
-    return str;
+  sortFeatures_() {
+    this.features_.sort((a, b) => {
+      return a.get("FP") - b.get("FP");
+    });
   }
 }
