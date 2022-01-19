@@ -124,7 +124,6 @@ class Cram {
         resolve(this.containers_.get(pos));
       }
       var c = new CramDataContainer(this.cram_, pos);
-      c.loadCompressionHeaderBlock();
       this.containers_.set(pos, c);
       resolve(c);
     });
