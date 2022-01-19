@@ -16,13 +16,7 @@ class CramHeader extends CramContainer {
       return this.chr_list;
     }
 
-    if (typeof this.fileid === "undefined") {
-      return this.loadHeader_().then(() => {
-        return this.loadChrList();
-      });
-    }
-
-    var p = this.header_length_.then((header_length) => {
+    this.chr_list = this.header_length_.then((header_length) => {
       var block = this.stream_.readBlock(this.pos_ + header_length);
       var txt = block.get("IO").readString(block.get("rawSize"));
 
@@ -36,8 +30,7 @@ class CramHeader extends CramContainer {
       });
       return list;
     });
-    this.chr_list = p;
-    return p;
+    return this.chr_list;
   }
 
   loadHeader_() {
