@@ -174,11 +174,7 @@ class Cram {
     record.refSeqName = chr_list[record.refSeqId];
     record.restoreCigar();
     if (this.withFASTA_) {
-      record.seq = await this.fasta_.laodSequence(
-        record.refSeqName,
-        record.position - 1,
-        record.readLength
-      );
+      await record.restoreSequence(this.fasta_);
     }
   }
 }
