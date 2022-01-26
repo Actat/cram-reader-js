@@ -16,12 +16,16 @@ function testLocal() {
   const end = document.forms.formLocal.endLocal.value;
   const cram = document.forms.formLocal.cramLocal.files[0];
   const crai = document.forms.formLocal.craiLocal.files[0];
+  const fa = document.forms.formLocal.faLocal.files[0];
+  const fai = document.forms.formLocal.faiLocal.files[0];
   console.log(chr);
   console.log(start);
   console.log(end);
   console.log(cram);
   console.log(crai);
-  var c = new Cram(cram, crai, true);
+  console.log(fa);
+  console.log(fai);
+  var c = new Cram(cram, crai, true, fa, fai);
   changeState("Loading local file...");
   c.getRecords(chr, start, end)
     .then((reads) => {
@@ -46,12 +50,16 @@ function testRemote() {
   const end = document.forms.formRemote.endRemote.value;
   const cram = document.forms.formRemote.cramRemote.value;
   const crai = document.forms.formRemote.craiRemote.value;
+  const fa = document.forms.formRemote.faRemote.value;
+  const fai = document.forms.formRemote.faiRemote.value;
   console.log(chr);
   console.log(start);
   console.log(end);
   console.log(cram);
   console.log(crai);
-  var c = new Cram(cram, crai, false);
+  console.log(fa);
+  console.log(fai);
+  var c = new Cram(cram, crai, false, fa, fai);
   changeState("Loading remote file...");
   c.getRecords(chr, start, end)
     .then((reads) => {
