@@ -10,3 +10,4 @@ cat src/cramRecord.js >> cram-reader-js.js
 cat src/cramSlice.js >> cram-reader-js.js
 cat src/cramStream.js >> cram-reader-js.js
 cat src/fileHandler.js >> cram-reader-js.js
+cat src/fasta.js >> cram-reader-js.js
