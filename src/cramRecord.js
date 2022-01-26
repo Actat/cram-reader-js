@@ -224,7 +224,7 @@ class CramRecord {
               break;
 
             case "X":
-              var base = ref.slice(fp - 1, fp);
+              var base = ref.slice(fp - 1, fp).toUpperCase();
               var index = "ACGTN".indexOf(base);
               var subst_matrix = new Uint8Array(feature.get("SM"));
               var subst_code = subst_matrix.slice(index, index + 1)[0];
@@ -245,7 +245,7 @@ class CramRecord {
               break;
           }
         });
-        this.seq = ref;
+        this.seq = ref.toUpperCase();
       });
   }
 }
