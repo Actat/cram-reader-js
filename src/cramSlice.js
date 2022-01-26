@@ -258,6 +258,8 @@ class CramSlice {
       f.set("QS", await this.readItem_("QS", "Byte"));
     } else if (f.get("FC") == "X") {
       f.set("BS", await this.readItem_("BS", "Byte"));
+      var chb = await this.container_.loadCompressionHeaderBlock();
+      f.set("SM", chb.get("content").get("pm").get("SM"));
     } else if (f.get("FC") == "I") {
       f.set("IN", await this.readItem_("IN", "ByteArray"));
     } else if (f.get("FC") == "S") {
