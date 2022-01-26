@@ -1,15 +1,16 @@
 class Cram {
-  constructor(cram, crai, local_flag, fa = undefined, fai = undefined) {
+  constructor(cram, crai, local_flag, fa, fai) {
     if (!cram || !crai) {
       throw "Files are Falsy";
     }
     this.local_flag_ = local_flag;
     this.cram_ = new FileHandler(cram, local_flag);
     this.crai_ = new FileHandler(crai, local_flag);
-    if (!fa && !fai) {
+    if (fa && fai) {
       this.withFASTA_ = true;
-      this.fa_ = new FileHandler(fa, local_flag);
-      this.fai_ = new FileHandler(fai, local_flag);
+      var fah = new FileHandler(fa, local_flag);
+      var faih = new FileHandler(fai, local_flag);
+      this.fasta_ = new Fasta(fah, faih);
     } else {
       this.withFASTA_ = false;
     }
