@@ -164,7 +164,6 @@ class CramRecord {
         refLen -= 1;
       }
       if (fc == "S") {
-        console.log(feature);
         refLen -= feature.get("SC").length;
       }
       if (fc == "D") {
@@ -231,14 +230,6 @@ class CramRecord {
               var subst_code = subst_matrix.slice(index, index + 1)[0];
               var destination = "ACGTN".replace(base, "");
               var bs = new Uint8Array(feature.get("BS"))[0];
-              console.log(
-                base,
-                index,
-                subst_matrix,
-                subst_code,
-                destination,
-                bs
-              );
               var sub = "x";
               for (var i = 0; i < 4; i++) {
                 if (((subst_code >> (2 * (3 - i))) & 0b11) == bs) {
