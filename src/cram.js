@@ -33,6 +33,7 @@ class Cram {
           reject(e);
         });
       var record_lists = [];
+      var filtered_records = [];
       Promise.all([index, id])
         .then((values) => {
           var index = values[0];
@@ -54,17 +55,26 @@ class Cram {
           return promises;
         })
         .then((promises) => {
-          Promise.all(promises)
+          return Promise.all(promises)
             .then(() => {
               // concat all record lists
-              var filtered_records = [];
               record_lists.forEach((list) => {
                 filtered_records = filtered_records.concat(list);
               });
               // decorate all records
+              var decorated_records = [];
               filtered_records.forEach((record) => {
-                this.decorateRecords_(chr_list, record);
+                decorated_records.push(this.decorateRecords_(chr_list, record));
               });
+              return decorated_records;
+            })
+            .catch((e) => {
+              reject(e);
+            });
+        })
+        .then((records) => {
+          Promise.all(records)
+            .then(() => {
               resolve(filtered_records);
             })
             .catch((e) => {
@@ -160,8 +170,15 @@ class Cram {
     return filtered;
   }
 
-  decorateRecords_(chr_list, record) {
+  async decorateRecords_(chr_list, record) {
     record.refSeqName = chr_list[record.refSeqId];
     record.restoreCigar();
+    if (this.withFASTA_) {
+      record.seq = await this.fasta_.laodSequence(
+        record.refSeqName,
+        record.position - 1,
+        record.readLength
+      );
+    }
   }
 }
