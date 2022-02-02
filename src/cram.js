@@ -6,6 +6,7 @@ class Cram {
     this.local_flag_ = local_flag;
     this.cram_ = new FileHandler(cram, local_flag);
     this.crai_ = new FileHandler(crai, local_flag);
+    this.index_ = this.loadCraiFile_();
     if (fa && fai) {
       this.withFASTA_ = true;
       var fah = new FileHandler(fa, local_flag);
@@ -19,7 +20,6 @@ class Cram {
 
   getRecords(chr, start, end) {
     return new Promise((resolve, reject) => {
-      var index = this.loadCraiFile_();
       var chr_list;
       var header = new CramHeader(this.cram_);
 
@@ -34,7 +34,7 @@ class Cram {
         });
       var record_lists = [];
       var filtered_records = [];
-      Promise.all([index, id])
+      Promise.all([this.index_, id])
         .then((values) => {
           var index = values[0];
           var id = values[1];
