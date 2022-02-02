@@ -9,8 +9,7 @@ class Fasta {
     this.faindex_ = this.loadFai_();
   }
 
-  laodSequence(chr, position, length) {
-    var endpos = position + length;
+  laodSequence(chr, start, end) {
     return this.faindex_
       .then((faindex) => {
         const index = faindex.find((elem) => {
@@ -19,12 +18,12 @@ class Fasta {
         if (typeof index === "undefined") {
           throw "Chromosome (" + chr + ") is not found in faindex.";
         }
-        if (position < 0 || endpos > index[1]) {
+        if (start < 1 || end > index[1]) {
           throw "out of bounds";
         }
-        var start = this.getBytePos_(position, index[2], index[3], index[4]);
-        var end = this.getBytePos_(endpos, index[2], index[3], index[4]);
-        return this.fa_.load(start, end - start);
+        var start_byte = this.getBytePos_(start, index[2], index[3], index[4]);
+        var end_byte = this.getBytePos_(end, index[2], index[3], index[4]);
+        return this.fa_.load(start_byte, end_byte - start_byte + 1);
       })
       .then((arraybuffer) => {
         var str = String.fromCharCode.apply("", new Uint8Array(arraybuffer));
@@ -33,8 +32,9 @@ class Fasta {
   }
 
   getBytePos_(pos, offset, linebases, linewidth) {
-    var m = pos % linebases;
-    var n = (pos - m) / linebases;
+    // pos is 1-start coordinate
+    var m = (pos - 1) % linebases;
+    var n = (pos - 1 - m) / linebases;
     return offset + linewidth * n + m;
   }
 
