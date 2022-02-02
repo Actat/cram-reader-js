@@ -7,9 +7,35 @@ class Fasta {
     this.fa_ = fa;
     this.fai_ = fai;
     this.faindex_ = this.loadFai_();
+    this.changeBase_ = {
+      A: "T",
+      T: "A",
+      G: "C",
+      C: "G",
+      R: "Y",
+      Y: "R",
+      M: "K",
+      K: "M",
+      B: "V",
+      V: "B",
+      D: "H",
+      H: "D",
+      a: "t",
+      t: "a",
+      g: "c",
+      c: "g",
+      r: "y",
+      y: "r",
+      m: "k",
+      k: "m",
+      b: "v",
+      v: "b",
+      d: "h",
+      h: "d",
+    };
   }
 
-  laodSequence(chr, start, end) {
+  laodSequence(chr, start, end, strand = "+") {
     return this.faindex_
       .then((faindex) => {
         const index = faindex.find((elem) => {
@@ -28,6 +54,13 @@ class Fasta {
       .then((arraybuffer) => {
         var str = String.fromCharCode.apply("", new Uint8Array(arraybuffer));
         return str.replace(/\r?\n/g, "");
+      })
+      .then((seq) => {
+        if (strand !== "-" && strand !== -1) {
+          return seq;
+        } else {
+          return this.reverseComplement_(seq);
+        }
       });
   }
 
@@ -57,5 +90,13 @@ class Fasta {
       });
       return faindex;
     });
+  }
+
+  reverseComplement_(seq) {
+    var retval = new String("");
+    for (var i = 0; i < seq.length; i++) {
+      retval = this.changeBase_[seq.charAt(i)].concat(retval);
+    }
+    return retval;
   }
 }
