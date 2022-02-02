@@ -71,6 +71,14 @@ class Fasta {
     return offset + linewidth * n + m;
   }
 
+  reverseComplement_(seq) {
+    var retval = new String("");
+    for (var i = 0; i < seq.length; i++) {
+      retval = this.changeBase_[seq.charAt(i)].concat(retval);
+    }
+    return retval;
+  }
+
   loadFai_() {
     return this.fai_.load().then((arraybuffer) => {
       var faindex = [];
@@ -90,13 +98,5 @@ class Fasta {
       });
       return faindex;
     });
-  }
-
-  reverseComplement_(seq) {
-    var retval = new String("");
-    for (var i = 0; i < seq.length; i++) {
-      retval = this.changeBase_[seq.charAt(i)].concat(retval);
-    }
-    return retval;
   }
 }
