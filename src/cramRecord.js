@@ -174,7 +174,7 @@ class CramRecord {
       }
     });
     return fasta
-      .laodSequence(this.refSeqName, this.position, this.position + refLen - 1)
+      .loadSequence(this.refSeqName, this.position, this.position + refLen - 1)
       .then((ref) => {
         this.features_.forEach((feature) => {
           var fp = feature.get("FP");
