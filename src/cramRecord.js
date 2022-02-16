@@ -155,97 +155,111 @@ class CramRecord {
   restoreSequence(fasta) {
     this.sortFeatures_();
     var refLen = this.readLength;
-    this.features_.forEach((feature) => {
-      var fc = feature.get("FC");
+    var ref_fragments = [];
+    var last_feature_pos = 0;
+    var fragment_pos = this.position;
+    var fragment_length = 0;
+    for (var i = 0; i < this.features_.length + 1; i++) {
+      var fc = "";
+      var fp = this.readLength;
+      if (i < this.features_.length) {
+        fc = this.features_[i].get("FC");
+        fp = this.features_[i].get("FP");
+      }
+      fragment_length += fp - last_feature_pos;
+      last_feature_pos = fp;
       if (fc == "I") {
-        refLen -= feature.get("IN").length;
+        refLen -= this.features_[i].get("IN").length;
+        continue;
       }
       if (fc == "i") {
-        refLen -= 1;
+        refLen--;
+        continue;
       }
       if (fc == "S") {
-        refLen -= feature.get("SC").length;
+        refLen -= this.features_[i].get("SC").length;
+        continue;
       }
-      if (fc == "D") {
-        refLen += feature.get("DL");
+      if (fc == "D" || fc == "N" || i == this.features_.length) {
+        ref_fragments.push(
+          fasta.loadSequence(
+            this.refSeqName,
+            fragment_pos,
+            fragment_pos + fragment_length - 1
+          )
+        );
+        if (fc == "D") {
+          fragment_length += this.features_[i].get("DL");
+        }
+        if (fc == "N") {
+          fragment_length += this.features_[i].get("RS");
+        }
+        fragment_pos = fragment_pos + fragment_length;
+        fragment_length = 0;
       }
-      if (fc == "N") {
-        refLen += feature.get("RS");
-      }
-    });
-    return fasta
-      .loadSequence(this.refSeqName, this.position, this.position + refLen - 1)
-      .then((ref) => {
-        this.features_.forEach((feature) => {
-          var fp = feature.get("FP");
-          switch (feature.get("FC")) {
-            case "I":
-              var a = ref.slice(0, fp - 1);
-              var b = ref.slice(fp - 1);
-              var str = String.fromCharCode.apply(
-                "",
-                new Uint8Array(feature.get("IN"))
-              );
-              ref = a + str + b;
-              break;
-
-            case "i":
-              var a = ref.slice(0, fp - 1);
-              var b = ref.slice(fp - 1);
-              var str = String.fromCharCode.apply(
-                "",
-                new Uint8Array(feature.get("BA"))
-              );
-              ref = a + str + b;
-              break;
-
-            case "S":
-              var a = ref.slice(0, fp - 1);
-              var b = ref.slice(fp - 1);
-              var str = String.fromCharCode.apply(
-                "",
-                new Uint8Array(feature.get("SC"))
-              );
-              ref = a + str + b;
-              break;
-
-            case "D":
-              var dl = feature.get("DL");
-              var a = ref.slice(0, fp - 1);
-              var b = ref.slice(fp - 1 + dl);
-              ref = a + b;
-              break;
-
-            case "N":
-              var rs = feature.get("RS");
-              var a = ref.slice(0, fp - 1);
-              var b = ref.slice(fp - 1 + rs);
-              ref = a + b;
-              break;
-
-            case "X":
-              var base = ref.slice(fp - 1, fp).toUpperCase();
-              var index = "ACGTN".indexOf(base);
-              var subst_matrix = new Uint8Array(feature.get("SM"));
-              var subst_code = subst_matrix.slice(index, index + 1)[0];
-              var destination = "ACGTN".replace(base, "");
-              var bs = new Uint8Array(feature.get("BS"))[0];
-              var sub = "x";
-              for (var i = 0; i < 4; i++) {
-                if (((subst_code >> (2 * (3 - i))) & 0b11) == bs) {
-                  sub = destination.charAt(i);
-                }
-              }
-              var a = ref.slice(0, fp - 1);
-              var b = ref.slice(fp);
-              ref = a + sub + b;
-              break;
-
-            default:
-              break;
-          }
-        });
-        this.seq = ref.toUpperCase();
+    }
+    return Promise.all(ref_fragments).then((fragments) => {
+      var ref = "";
+      fragments.forEach((fragment) => {
+        ref = ref.concat(fragment);
       });
+      this.features_.forEach((feature) => {
+        var fp = feature.get("FP");
+        switch (feature.get("FC")) {
+          case "I":
+            var a = ref.slice(0, fp - 1);
+            var b = ref.slice(fp - 1);
+            var str = String.fromCharCode.apply(
+              "",
+              new Uint8Array(feature.get("IN"))
+            );
+            ref = a + str + b;
+            break;
+
+          case "i":
+            var a = ref.slice(0, fp - 1);
+            var b = ref.slice(fp - 1);
+            var str = String.fromCharCode.apply(
+              "",
+              new Uint8Array(feature.get("BA"))
+            );
+            ref = a + str + b;
+            break;
+
+          case "S":
+            var a = ref.slice(0, fp - 1);
+            var b = ref.slice(fp - 1);
+            var str = String.fromCharCode.apply(
+              "",
+              new Uint8Array(feature.get("SC"))
+            );
+            ref = a + str + b;
+            break;
+
+          case "X":
+            var base = ref.slice(fp - 1, fp).toUpperCase();
+            var index = "ACGTN".indexOf(base);
+            var subst_matrix = new Uint8Array(feature.get("SM"));
+            var subst_code = subst_matrix.slice(index, index + 1)[0];
+            var destination = "ACGTN".replace(base, "");
+            var bs = new Uint8Array(feature.get("BS"))[0];
+            var sub = "x";
+            for (var i = 0; i < 4; i++) {
+              if (((subst_code >> (2 * (3 - i))) & 0b11) == bs) {
+                sub = destination.charAt(i);
+              }
+            }
+            var a = ref.slice(0, fp - 1);
+            var b = ref.slice(fp);
+            ref = a + sub + b;
+            break;
+
+          default:
+            break;
+        }
+      });
+      this.seq = ref.toUpperCase();
+      return this.seq;
+    });
   }
 }
