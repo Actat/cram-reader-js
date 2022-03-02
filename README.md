@@ -8,7 +8,8 @@ This is a cram file handling module to make [KERO-browse](https://github.com/DBK
 // Source the cram-reader-js.min.js and gunzip.min.js first.
 
 // For local file
-// cram, crai, fa and fai are File objects (https://developer.mozilla.org/docs/Web/API/File), and form tag in html gives this type of object.
+// cram, crai, fa and fai are File objects (https://developer.mozilla.org/docs/Web/API/File).
+// Form tag in html gives this type of object.
 var cram = File(bits, name);
 var crai = File(bits, name);
 var fa = File(bits, name);
