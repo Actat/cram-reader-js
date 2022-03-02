@@ -1,0 +1,8 @@
+{
+  "ecma": 8,
+  "mangle": {
+    "properties": {
+      "reserved": ["getRecords", "toSAMString", "bf_", "cf_", "cigar", "features_", "mappingQuality", "matePos", "mateReadName", "mateRefId", "position", "qualityScore", "readGroup", "readLength", "readName", "refSeqId", "refSeqName", "seq", "tags", "templateSize"]
+    }
+  }
+}
