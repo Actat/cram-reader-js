@@ -60,7 +60,7 @@ function testRemote() {
   console.log(fa);
   console.log(fai);
   changeState("Loading remote file...");
-  var worker = new Worker("worker.js");
+  var worker = new Worker("src/worker.js");
   worker.postMessage([cram, crai, false, fa, fai]);
   worker.onmessage = function (reads) {
     var result = new String();
