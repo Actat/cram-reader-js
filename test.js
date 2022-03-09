@@ -25,23 +25,23 @@ function testLocal() {
   console.log(crai);
   console.log(fa);
   console.log(fai);
-  var c = new Cram(cram, crai, true, fa, fai);
   changeState("Loading local file...");
-  c.getRecords(chr, start, end)
-    .then((reads) => {
-      var result = new String();
-      reads.forEach((r) => {
-        console.log(r);
-        result += r.toSAMString() + "\n";
-      });
-      changeState(result);
-      console.log(result);
-      console.log("finished.");
-    })
-    .catch((reason) => {
-      console.log(reason);
-      changeState("Error occurred. (" + reason + ")");
+  var worker = new Worker("src/worker.js");
+  worker.postMessage([cram, crai, true, fa, fai]);
+  worker.onmessage = function (reads) {
+    var result = new String();
+    reads.forEach((r) => {
+      console.log(r);
+      result += r.toSAMString() + "\n";
     });
+    changeState(result);
+    console.log(result);
+    console.log("finished.");
+  };
+  worker.onerror = function (reason) {
+    console.log(reason);
+    changeState("Error occurred. (" + reason + ")");
+  };
 }
 
 function testRemote() {
@@ -59,23 +59,23 @@ function testRemote() {
   console.log(crai);
   console.log(fa);
   console.log(fai);
-  var c = new Cram(cram, crai, false, fa, fai);
   changeState("Loading remote file...");
-  c.getRecords(chr, start, end)
-    .then((reads) => {
-      var result = new String();
-      reads.forEach((r) => {
-        console.log(r);
-        result += r.toSAMString() + "\n";
-      });
-      changeState(result);
-      console.log(result);
-      console.log("finished.");
-    })
-    .catch((reason) => {
-      console.log(reason);
-      changeState("Error occurred. (" + reason + ")");
+  var worker = new Worker("worker.js");
+  worker.postMessage([cram, crai, false, fa, fai]);
+  worker.onmessage = function (reads) {
+    var result = new String();
+    reads.forEach((r) => {
+      console.log(r);
+      result += r.toSAMString() + "\n";
     });
+    changeState(result);
+    console.log(result);
+    console.log("finished.");
+  };
+  worker.onerror = function (reason) {
+    console.log(reason);
+    changeState("Error occurred. (" + reason + ")");
+  };
 }
 
 function changeState(str) {
