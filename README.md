@@ -5,7 +5,7 @@ This is a cram file handling module to make [KERO-browse](https://github.com/DBK
 ## Usage
 
 ```js
-// Source the cram-reader-js.min.js and gunzip.min.js first.
+// Source the cram-reader-js.min.js first.
 
 // For local file
 // cram, crai, fa and fai are File objects (https://developer.mozilla.org/docs/Web/API/File).
