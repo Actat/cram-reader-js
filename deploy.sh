@@ -22,4 +22,4 @@ terser cram-reader-js.js --ecma 8 --mangle --mangle-props regex=/_$/,reserved=[g
 rm cram-reader-js.js
 
 # combine gunzip.min.js
-cat gunzip.min.js >> cram-reader-js.min.js
+cat src/gunzip.min.js >> cram-reader-js.min.js
