@@ -9,11 +9,7 @@ class CramReader {
     this.listeners_ = new Map();
     this.worker_ = new Worker("cram-reader-worker.min.js");
     this.worker_.onmessage = function (event) {
-      var callbackfunc = this.listeners_.get(event.data[0]);
-      this.listeners_.delete(event.data[0]);
-      if (callbackfunc) {
-        callbackfunc(event.data[1]);
-      }
+      this.eventListener_(event);
     };
     this.sendQuery_("init", [cram, crai, local_flag, fa, fai], undefined);
   }
@@ -26,6 +22,14 @@ class CramReader {
     var uuid = this.generateUUID4_();
     this.listeners_.set(uuid, callback);
     this.worker_.postMessage([uuid, fname, args]);
+  }
+
+  eventListener_(event) {
+    var callbackfunc = this.listeners_.get(event.data[0]);
+    this.listeners_.delete(event.data[0]);
+    if (callbackfunc) {
+      callbackfunc(event.data[1]);
+    }
   }
 
   generateUUID4_() {
