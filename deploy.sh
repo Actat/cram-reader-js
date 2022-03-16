@@ -6,6 +6,8 @@ rm cram-reader-js.min.js
 rm cram-reader-worker.min.js
 
 # concat source
+cat src/cramReader.js > cram-reader-js.js
+
 cat src/bitsIo.js > cram-reader-worker.js
 cat src/cram.js >> cram-reader-worker.js
 cat src/cramContainer.js >> cram-reader-worker.js
@@ -23,6 +25,7 @@ cat src/worker.js >> cram-reader-worker.js
 terser cram-reader-js.js --ecma 8 --mangle --mangle-props regex=/_$/,reserved=[getRecords,toSAMString,bf_,cf_,cigar,features_,mappingQuality,matePos,mateReadName,mateRefId,position,qualityScore,readGroup,readLength,readName,refSeqId,refSeqName,seq,tags,templateSize] > cram-reader-js.min.js
 terser cram-reader-worker.js --ecma 8 --mangle --mangle-props regex=/_$/,reserved=[getRecords,toSAMString,bf_,cf_,cigar,features_,mappingQuality,matePos,mateReadName,mateRefId,position,qualityScore,readGroup,readLength,readName,refSeqId,refSeqName,seq,tags,templateSize] > cram-reader-worker.min.js
 
+rm cram-reader-js.js
 rm cram-reader-worker.js
 
 # combine gunzip.min.js
