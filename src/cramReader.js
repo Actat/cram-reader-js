@@ -19,11 +19,6 @@ class CramReader {
   }
 
   getRecords(chr, start, end, callback) {
-    if (callback) {
-      this.worker_.onmessage = function (result) {
-        callback(result);
-      };
-    }
     this.sendQuery_("read", [chr, start, end], callback);
   }
 
