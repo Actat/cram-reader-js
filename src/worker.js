@@ -11,23 +11,14 @@ onmessage = function (data) {
       postMessage([uuid]);
       break;
     case "read":
-      var reads = cram
+      cram
         .getRecords(args[0], args[1], args[2])
         .then((reads) => {
-          var result = new String();
-          reads.forEach((r) => {
-            console.log(r);
-            result += r.toSAMString() + "\n";
-          });
-          changeState(result);
-          console.log(result);
-          console.log("finished.");
+          postMessage([uuid, reads]);
         })
         .catch((reason) => {
-          console.log(reason);
-          changeState("Error occurred. (" + reason + ")");
+          console.error(reason);
         });
-      postMessage([uuid, reads]);
       break;
   }
 };
