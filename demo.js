@@ -10,6 +10,21 @@ window.onload = function () {
   });
 };
 
+var cb = function (reads) {
+  var result = new String();
+  reads.forEach((r) => {
+    console.log(r);
+    result += r.toSAMString() + "\n";
+  });
+  changeState(result);
+  console.log(result);
+  console.log("finished.");
+};
+var oe = function (reason) {
+  console.log(reason);
+  changeState("Error occurred. (" + reason + ")");
+};
+
 function testLocal() {
   const chr = document.forms.formLocal.chrnameLocal.value;
   const start = document.forms.formLocal.startLocal.value;
@@ -25,25 +40,9 @@ function testLocal() {
   console.log(crai);
   console.log(fa);
   console.log(fai);
-  if (window.Worker) {
-    changeState("Loading local file...");
-    var worker = new Worker("src/worker.js");
-    worker.postMessage([cram, crai, true, fa, fai]);
-    worker.onmessage = function (reads) {
-      var result = new String();
-      reads.forEach((r) => {
-        console.log(r);
-        result += r.toSAMString() + "\n";
-      });
-      changeState(result);
-      console.log(result);
-      console.log("finished.");
-    };
-    worker.onerror = function (reason) {
-      console.log(reason);
-      changeState("Error occurred. (" + reason + ")");
-    };
-  }
+  changeState("Loading local file...");
+  var c = new CramReader(cram, crai, true, fa, fai);
+  c.getRecords(chr, start, end, cb, oe);
 }
 
 function testRemote() {
@@ -61,25 +60,9 @@ function testRemote() {
   console.log(crai);
   console.log(fa);
   console.log(fai);
-  if (window.Worker) {
-    changeState("Loading remote file...");
-    var worker = new Worker("src/worker.js");
-    worker.postMessage([cram, crai, false, fa, fai]);
-    worker.onmessage = function (reads) {
-      var result = new String();
-      reads.forEach((r) => {
-        console.log(r);
-        result += r.toSAMString() + "\n";
-      });
-      changeState(result);
-      console.log(result);
-      console.log("finished.");
-    };
-    worker.onerror = function (reason) {
-      console.log(reason);
-      changeState("Error occurred. (" + reason + ")");
-    };
-  }
+  changeState("Loading remote file...");
+  var c = new CramReader(cram, crai, false, fa, fai);
+  c.getRecords(chr, start, end, cb, oe);
 }
 
 function changeState(str) {
