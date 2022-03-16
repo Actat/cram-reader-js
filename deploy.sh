@@ -7,9 +7,9 @@ rm cram-reader-worker.min.js
 
 # concat source
 cat src/cramReader.js > cram-reader-js.js
+cat src/cram.js >> cram-reader-js.js
 
 cat src/bitsIo.js > cram-reader-worker.js
-cat src/cram.js >> cram-reader-worker.js
 cat src/cramContainer.js >> cram-reader-worker.js
 cat src/cramDataContainer.js >> cram-reader-worker.js
 cat src/cramHeader.js >> cram-reader-worker.js
