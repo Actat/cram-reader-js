@@ -1,9 +1,9 @@
 var cram = undefined;
 
 onmessage = function (data) {
-  var uuid = data[0];
-  var fname = data[1];
-  var args = data[2];
+  var uuid = data.data[0];
+  var fname = data.data[1];
+  var args = data.data[2];
 
   switch (fname) {
     case "init":
