@@ -6,7 +6,7 @@ class Cram {
     this.local_flag_ = local_flag;
     this.cram_ = new FileHandler(cram, local_flag);
     this.crai_ = new FileHandler(crai, local_flag);
-    this.index_ = this.loadCraiFile_();
+    this.index_ = undefined;
     if (fa && fai) {
       this.withFASTA_ = true;
       var fah = new FileHandler(fa, local_flag);
@@ -19,6 +19,9 @@ class Cram {
   }
 
   getRecords(chr, start, end) {
+    if (typeof this.index_ === "undefined") {
+      this.index_ = this.loadCraiFile_();
+    }
     return new Promise((resolve, reject) => {
       var chr_list;
       var header = new CramHeader(this.cram_);
