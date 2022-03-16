@@ -10,8 +10,7 @@ window.onload = function () {
   });
 };
 
-var cb = function (result) {
-  var reads = result.data[1];
+var cb = function (reads) {
   var result = new String();
   reads.forEach((r) => {
     console.log(r);

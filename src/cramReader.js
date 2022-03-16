@@ -8,8 +8,9 @@ class CramReader {
     }
     this.listeners_ = new Map();
     this.worker_ = new Worker("cram-reader-worker.min.js");
+    this.worker_.cram_reader = this;
     this.worker_.onmessage = function (event) {
-      this.eventListener_(event);
+      this.cram_reader.eventListener_(event);
     };
     this.sendQuery_("init", [cram, crai, local_flag, fa, fai], undefined);
   }
