@@ -9,6 +9,7 @@ rm cram-reader-worker.min.js
 cat src/cramReader.js > cram-reader-js.js
 cat src/cram.js >> cram-reader-js.js
 cat src/fileHandler.js >> cram-reader-js.js
+cat src/fasta.js >> cram-reader-js.js
 
 cat src/bitsIo.js > cram-reader-worker.js
 cat src/cramContainer.js >> cram-reader-worker.js
@@ -18,7 +19,6 @@ cat src/cramRans.js >> cram-reader-worker.js
 cat src/cramRecord.js >> cram-reader-worker.js
 cat src/cramSlice.js >> cram-reader-worker.js
 cat src/cramStream.js >> cram-reader-worker.js
-cat src/fasta.js >> cram-reader-worker.js
 cat src/worker.js >> cram-reader-worker.js
 
 # minify with terser v5.12.0
