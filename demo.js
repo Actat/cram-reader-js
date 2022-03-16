@@ -15,7 +15,7 @@ var cb = function (result) {
   var result = new String();
   reads.forEach((r) => {
     console.log(r);
-    result += r.toSAMString() + "\n";
+    result += r.samString + "\n";
   });
   changeState(result);
   console.log(result);

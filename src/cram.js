@@ -179,5 +179,6 @@ class Cram {
     if (this.withFASTA_) {
       await record.restoreSequence(this.fasta_);
     }
+    record.samString = record.toSAMString();
   }
 }
