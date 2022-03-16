@@ -45,7 +45,6 @@ class CramReader {
           break;
       }
     }
-    console.log(format);
     return format;
   }
 }
