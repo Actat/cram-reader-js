@@ -6,7 +6,7 @@ class CramReader {
     if (!cram || !crai) {
       throw "Files are Falsy";
     }
-    this.listeners_ = Map();
+    this.listeners_ = new Map();
     this.worker_ = new Worker("cram-reader-worker.min.js");
     this.worker_.onmessage = function (event) {
       var callbackfunc = this.listeners_.get(event.data[0]);
