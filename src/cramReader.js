@@ -21,6 +21,6 @@ class CramReader {
         onerror(error);
       };
     }
-    this.worker_.postMessage(this.cram_, chr, start, end);
+    this.worker_.postMessage([this.cram_, chr, start, end]);
   }
 }

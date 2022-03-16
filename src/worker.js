@@ -1,7 +1,6 @@
 onmessage = function (e) {
-  var c = new Cram(e[0], e[1], e[2], e[3], e[4]);
-  var worker_result = c
-    .getRecords(chr, start, end)
+  var worker_result = e[0]
+    .getRecords(e[1], e[2], e[3])
     .then((reads) => {
       var result = new String();
       reads.forEach((r) => {
