@@ -24,6 +24,7 @@ class CramReader {
     while (true) {
       var generated = this.generateUUID4_();
       if (!this.listeners_.has(generated)) {
+        uuid = generated;
         break;
       }
     }
