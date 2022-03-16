@@ -6,7 +6,7 @@ class Fasta {
     }
     this.fa_ = fa;
     this.fai_ = fai;
-    this.faindex_ = this.loadFai_();
+    this.faindex_ = undefined;
     this.changeBase_ = {
       A: "T",
       T: "A",
@@ -161,6 +161,9 @@ class Fasta {
   }
 
   loadFromSource_(chr, start, end) {
+    if (typeof this.faindex_ === "undefined") {
+      this.faindex_ = this.loadFai_();
+    }
     return this.faindex_
       .then((faindex) => {
         const index = faindex.find((elem) => {
