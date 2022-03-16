@@ -29,4 +29,4 @@ rm cram-reader-js.js
 rm cram-reader-worker.js
 
 # combine gunzip.min.js
-cat src/gunzip.min.js >> cram-reader-js.min.js
+cat src/gunzip.min.js >> cram-reader-worker.min.js
