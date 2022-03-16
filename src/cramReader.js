@@ -36,15 +36,16 @@ class CramReader {
   generateUUID4_() {
     var format = "RRRRRRRR-RRRR-4RRR-rRRR-RRRRRRRRRRRR";
     for (var i = 0; i < format.length; i++) {
-      switch (format[i]) {
+      switch (format.charAt(i)){
         case "R":
-          format[i] = Math.floor(Math.random() * 16).toString(16);
+          format = format.replace("R", Math.floor(Math.random() * 16).toString(16));
           break;
         case "r":
-          format[i] = (Math.floor(Math.random() * 4) + 8).toString(16);
+          format = format.replace("r", (Math.floor(Math.random() * 4) + 8).toString(16));
           break;
       }
     }
-    return format.join();
+    console.log(format);
+    return format;
   }
 }
