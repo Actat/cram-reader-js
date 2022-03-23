@@ -24,7 +24,14 @@ class CramReader {
   }
 
   sendQuery_(fname, args, callback) {
-    var uuid = this.generateUUID4_();
+    var uuid;
+    while (true) {
+      var generated = this.generateUUID4_();
+      if (!this.listeners_.has(generated)) {
+        uuid = generated;
+        break;
+      }
+    }
     this.listeners_.set(uuid, callback);
     this.worker_.postMessage([uuid, fname, args]);
   }
