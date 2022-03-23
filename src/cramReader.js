@@ -19,6 +19,10 @@ class CramReader {
     this.sendQuery_("read", [chr, start, end], callback);
   }
 
+  setOnerror(func) {
+    this.worker_.onerror = func;
+  }
+
   sendQuery_(fname, args, callback) {
     var uuid = this.generateUUID4_();
     this.listeners_.set(uuid, callback);

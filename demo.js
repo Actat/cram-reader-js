@@ -20,6 +20,7 @@ var cb = function (reads) {
   console.log(result);
   console.log("finished.");
 };
+
 var oe = function (reason) {
   console.log(reason);
   changeState("Error occurred. (" + reason + ")");
@@ -42,7 +43,8 @@ function testLocal() {
   console.log(fai);
   changeState("Loading local file...");
   var c = new CramReader(cram, crai, true, fa, fai);
-  c.getRecords(chr, start, end, cb, oe);
+  c.setOnerror(oe);
+  c.getRecords(chr, start, end, cb);
 }
 
 function testRemote() {
@@ -62,7 +64,8 @@ function testRemote() {
   console.log(fai);
   changeState("Loading remote file...");
   var c = new CramReader(cram, crai, false, fa, fai);
-  c.getRecords(chr, start, end, cb, oe);
+  c.setOnerror(oe);
+  c.getRecords(chr, start, end, cb);
 }
 
 function changeState(str) {
