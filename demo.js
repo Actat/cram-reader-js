@@ -23,7 +23,7 @@ var cb = function (reads) {
 
 var oe = function (reason) {
   console.log(reason);
-  changeState("Error occurred. (" + reason + ")");
+  changeState("Error occurred. (" + reason.message + ")");
 };
 
 function testLocal() {
