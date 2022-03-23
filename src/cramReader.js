@@ -7,7 +7,7 @@ class CramReader {
       throw "Files are Falsy";
     }
     this.listeners_ = new Map();
-    this.worker_ = new Worker("cram-reader-worker.min.js");
+    this.worker_ = this.createWorker_("cram-reader-worker.min.js");
     this.worker_.cram_reader = this;
     this.worker_.onmessage = function (event) {
       this.cram_reader.eventListener_(event);
@@ -21,6 +21,20 @@ class CramReader {
 
   setOnerror(func) {
     this.worker_.onerror = func;
+  }
+
+  createWorker_(fname) {
+    try {
+      var current_path = window.location.href.replace(/\/[^\/]*\.html/g, "/");
+      var path = current_path + fname;
+      var blob = new Blob(["importScripts('" + path + "');"], {
+        type: "text/javascript",
+      });
+      var objecturl = URL.createObjectURL(blob);
+      return new Worker(objecturl);
+    } catch {
+      return new Worker(fname);
+    }
   }
 
   sendQuery_(fname, args, callback) {
