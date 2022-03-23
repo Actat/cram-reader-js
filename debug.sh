@@ -22,9 +22,11 @@ cat src/fasta.js >> cram-reader-worker.js
 cat src/worker.js >> cram-reader-worker.js
 
 # minify with terser v5.12.0
-terser cram-reader-js.js --ecma 8 --mangle --mangle-props regex=/_$/,reserved=[getRecords,toSAMString,bf_,cf_,cigar,features_,mappingQuality,matePos,mateReadName,mateRefId,position,qualityScore,readGroup,readLength,readName,refSeqId,refSeqName,seq,tags,templateSize] > cram-reader-js.min.js
-terser cram-reader-worker.js --ecma 8 --mangle --mangle-props regex=/_$/,reserved=[getRecords,toSAMString,bf_,cf_,cigar,features_,mappingQuality,matePos,mateReadName,mateRefId,position,qualityScore,readGroup,readLength,readName,refSeqId,refSeqName,seq,tags,templateSize] > cram-reader-worker.min.js
+#terser cram-reader-js.js --ecma 8 --mangle --mangle-props regex=/_$/,reserved=[getRecords,toSAMString,bf_,cf_,cigar,features_,mappingQuality,matePos,mateReadName,mateRefId,position,qualityScore,readGroup,readLength,readName,refSeqId,refSeqName,seq,tags,templateSize] > cram-reader-js.min.js
+#terser cram-reader-worker.js --ecma 8 --mangle --mangle-props regex=/_$/,reserved=[getRecords,toSAMString,bf_,cf_,cigar,features_,mappingQuality,matePos,mateReadName,mateRefId,position,qualityScore,readGroup,readLength,readName,refSeqId,refSeqName,seq,tags,templateSize] > cram-reader-worker.min.js
 
+cat cram-reader-js.js > cram-reader-js.min.js
+cat cram-reader-worker.js > cram-reader-worker.min.js
 rm cram-reader-js.js
 rm cram-reader-worker.js
 

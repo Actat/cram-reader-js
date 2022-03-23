@@ -8,12 +8,15 @@ class CramHeader extends CramContainer {
     this.max_header_length_ = 23;
     this.first_load_length_ =
       this.file_definition_length_ + this.max_header_length_;
-    this.header_length_ = this.loadHeader_();
+    this.header_length_ = undefined;
   }
 
   loadChrList() {
     if (typeof this.chr_list !== "undefined") {
       return this.chr_list;
+    }
+    if (typeof this.header_length_ === "undefined") {
+      this.header_length_ = this.loadHeader_();
     }
 
     this.chr_list = this.header_length_.then((header_length) => {

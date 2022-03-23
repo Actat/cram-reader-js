@@ -10,6 +10,22 @@ window.onload = function () {
   });
 };
 
+var cb = function (reads) {
+  var result = new String();
+  reads.forEach((r) => {
+    console.log(r);
+    result += r.samString + "\n";
+  });
+  changeState(result);
+  console.log(result);
+  console.log("finished.");
+};
+
+var oe = function (reason) {
+  console.log(reason);
+  changeState("Error occurred. (" + reason.message + ")");
+};
+
 function testLocal() {
   const chr = document.forms.formLocal.chrnameLocal.value;
   const start = document.forms.formLocal.startLocal.value;
@@ -25,23 +41,10 @@ function testLocal() {
   console.log(crai);
   console.log(fa);
   console.log(fai);
-  var c = new Cram(cram, crai, true, fa, fai);
   changeState("Loading local file...");
-  c.getRecords(chr, start, end)
-    .then((reads) => {
-      var result = new String();
-      reads.forEach((r) => {
-        console.log(r);
-        result += r.toSAMString() + "\n";
-      });
-      changeState(result);
-      console.log(result);
-      console.log("finished.");
-    })
-    .catch((reason) => {
-      console.log(reason);
-      changeState("Error occurred. (" + reason + ")");
-    });
+  var c = new CramReader(cram, crai, true, fa, fai);
+  c.setOnerror(oe);
+  c.getRecords(chr, start, end, cb);
 }
 
 function testRemote() {
@@ -59,23 +62,10 @@ function testRemote() {
   console.log(crai);
   console.log(fa);
   console.log(fai);
-  var c = new Cram(cram, crai, false, fa, fai);
   changeState("Loading remote file...");
-  c.getRecords(chr, start, end)
-    .then((reads) => {
-      var result = new String();
-      reads.forEach((r) => {
-        console.log(r);
-        result += r.toSAMString() + "\n";
-      });
-      changeState(result);
-      console.log(result);
-      console.log("finished.");
-    })
-    .catch((reason) => {
-      console.log(reason);
-      changeState("Error occurred. (" + reason + ")");
-    });
+  var c = new CramReader(cram, crai, false, fa, fai);
+  c.setOnerror(oe);
+  c.getRecords(chr, start, end, cb);
 }
 
 function changeState(str) {
