@@ -29,21 +29,15 @@ var start = 50199000;
 var end = 50200000;
 
 // Open files and run
-var c = new Cram(cram, crai, is_local_file, fa, fai);
-c.getRecords(chr, start, end).then((reads) => {
-  reads.forEach((r) => {
-    console.log(r);
-    console.log(r.toSAMString());
-  });
-});
+var c = new CramReader(cram, crai, is_local_file, fa, fai);
+c.setOnerror(onerrfunc);
+c.getRecords(chr, start, end, callbackfunc);
 
 // CRAM file can be read without fa file.
 // In this situation, sequence is not defined.
-var c = new Cram(cram, crai, is_local_file);
-c.getRecords(chr, start, end).then((reads) => {
-  reads.forEach((r) => {
-    console.log(r);
-    console.log(r.toSAMString());
-  });
-});
+var c = new CramReader(cram, crai, is_local_file);
+c.setOnerror(onerrfunc);
+c.getRecords(chr, start, end, callbackfunc);
 ```
+
+See demo.html and demo.js for detail.
