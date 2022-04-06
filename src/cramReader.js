@@ -1,5 +1,12 @@
 class CramReader {
-  constructor(cram, crai, local_flag, fa, fai) {
+  constructor(
+    cram,
+    crai,
+    local_flag,
+    fa = undefined,
+    fai = undefined,
+    path_worker = "cram-reader-worker.min.js"
+  ) {
     if (!window.Worker) {
       throw "Web Workers API is needed";
     }
@@ -7,7 +14,7 @@ class CramReader {
       throw "Files are Falsy";
     }
     this.listeners_ = new Map();
-    this.worker_ = this.createWorker_("cram-reader-worker.min.js");
+    this.worker_ = this.createWorker_(path_worker);
     this.worker_.cram_reader = this;
     this.worker_.onmessage = function (event) {
       this.cram_reader.eventListener_(event);
