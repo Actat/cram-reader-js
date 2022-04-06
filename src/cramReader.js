@@ -25,7 +25,7 @@ class CramReader {
 
   createWorker_(fname) {
     try {
-      var current_path = window.location.href.replace(/\/[^\/]*\.html/g, "/");
+      var current_path = window.location.href.replace(/\/[^\/]*$/g, "/");
       var path = current_path + fname;
       var blob = new Blob(["importScripts('" + path + "');"], {
         type: "text/javascript",
