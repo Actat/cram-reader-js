@@ -130,7 +130,7 @@ class CramSlice {
     if (this.slice_header_.get("content").get("refSeqId") == -2) {
       r.refSeqId = await this.readItem_("RI", "Int");
     } else {
-      r.refSeqId = this.slice_header_.get("content").get("refSeqid");
+      r.refSeqId = this.slice_header_.get("content").get("refSeqId");
     }
     r.readLength = await this.readItem_("RL", "Int");
     var header = await this.container_.loadCompressionHeaderBlock();
