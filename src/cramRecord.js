@@ -154,48 +154,52 @@ class CramRecord {
 
   restoreSequence(fasta) {
     this.sortFeatures_();
-    var refLen = this.readLength;
     var ref_fragments = [];
-    var last_feature_pos = 0;
-    var fragment_pos = this.position;
-    var fragment_length = 0;
+    var fp_offset = 0;
+    var ref_end_pos = this.position + this.readLength - 1;
+    var fragment_start_pos = this.position;
     for (var i = 0; i < this.features_.length + 1; i++) {
       var fc = "";
-      var fp = this.readLength;
+      var fragment_end_pos = ref_end_pos;
       if (i < this.features_.length) {
         fc = this.features_[i].get("FC");
-        fp = this.features_[i].get("FP");
+        var fp = this.features_[i].get("FP");
+        fragment_end_pos = this.position + (fp - 1) + fp_offset - 1;
       }
-      fragment_length += fp - last_feature_pos;
-      last_feature_pos = fp;
       if (fc == "I") {
-        refLen -= this.features_[i].get("IN").length;
+        var in_l = this.features_[i].get("IN").length;
+        ref_end_pos -= in_l;
+        fp_offset -= in_l;
         continue;
       }
       if (fc == "i") {
-        refLen--;
+        ref_end_pos--;
+        fp_offset--;
         continue;
       }
       if (fc == "S") {
-        refLen -= this.features_[i].get("SC").length;
+        var sc_l = this.features_[i].get("SC").length;
+        ref_end_pos -= sc_l;
+        fp_offset -= sc_l;
         continue;
       }
       if (fc == "D" || fc == "N" || i == this.features_.length) {
         ref_fragments.push(
           fasta.loadSequence(
             this.refSeqName,
-            fragment_pos,
-            fragment_pos + fragment_length - 1
+            fragment_start_pos,
+            fragment_end_pos
           )
         );
+        var skip_length;
         if (fc == "D") {
-          fragment_length += this.features_[i].get("DL");
+          skip_length = this.features_[i].get("DL");
         }
         if (fc == "N") {
-          fragment_length += this.features_[i].get("RS");
+          skip_length = this.features_[i].get("RS");
         }
-        fragment_pos = fragment_pos + fragment_length;
-        fragment_length = 0;
+        fragment_start_pos = fragment_end_pos + skip_length + 1;
+        ref_end_pos += skip_length;
       }
     }
     return Promise.all(ref_fragments).then((fragments) => {
