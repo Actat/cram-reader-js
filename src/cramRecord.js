@@ -172,13 +172,15 @@ class CramRecord {
         continue;
       }
       if (fc == "D" || fc == "N" || i == this.features_.length) {
-        ref_fragments.push(
-          fasta.loadSequence(
-            this.refSeqName,
-            fragment_start_pos,
-            fragment_start_pos + fragment_length - 1
-          )
-        );
+        if (fragment_length > 0) {
+          ref_fragments.push(
+            fasta.loadSequence(
+              this.refSeqName,
+              fragment_start_pos,
+              fragment_start_pos + fragment_length - 1
+            )
+          );
+        }
         var skip_length;
         if (fc == "D") {
           skip_length = this.features_[i].get("DL");
