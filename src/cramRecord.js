@@ -146,12 +146,6 @@ class CramRecord {
     }
   }
 
-  sortFeatures_() {
-    this.features_.sort((a, b) => {
-      return a.get("FP") - b.get("FP");
-    });
-  }
-
   restoreSequence(fasta) {
     this.sortFeatures_();
     var ref_fragments = [];
