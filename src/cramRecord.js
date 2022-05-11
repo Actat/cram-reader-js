@@ -146,34 +146,29 @@ class CramRecord {
   }
 
   restoreSequence(fasta) {
-    this.sortFeatures_();
     var ref_fragments = [];
-    var fp_offset = 0;
-    var ref_end_pos = this.position + this.readLength - 1;
     var fragment_start_pos = this.position;
+    var fragment_length = 0;
+    var insert_length = 0;
     for (var i = 0; i < this.features_.length + 1; i++) {
       var fc = "";
-      var fragment_end_pos = ref_end_pos;
       if (i < this.features_.length) {
         fc = this.features_[i].get("FC");
         var fp = this.features_[i].get("FP");
-        fragment_end_pos = this.position + (fp - 1) + fp_offset - 1;
+        fragment_length += fp - 1;
       }
       if (fc == "I") {
         var in_l = this.features_[i].get("IN").length;
-        ref_end_pos -= in_l;
-        fp_offset -= in_l;
+        insert_length += in_l;
         continue;
       }
       if (fc == "i") {
-        ref_end_pos--;
-        fp_offset--;
+        insert_length++;
         continue;
       }
       if (fc == "S") {
         var sc_l = this.features_[i].get("SC").length;
-        ref_end_pos -= sc_l;
-        fp_offset -= sc_l;
+        insert_length += sc_l;
         continue;
       }
       if (fc == "D" || fc == "N" || i == this.features_.length) {
@@ -181,7 +176,7 @@ class CramRecord {
           fasta.loadSequence(
             this.refSeqName,
             fragment_start_pos,
-            fragment_end_pos
+            fragment_start_pos + fragment_length - 1
           )
         );
         var skip_length;
@@ -191,8 +186,8 @@ class CramRecord {
         if (fc == "N") {
           skip_length = this.features_[i].get("RS");
         }
-        fragment_start_pos = fragment_end_pos + skip_length + 1;
-        ref_end_pos += skip_length;
+        fragment_start_pos += fragment_lenght + insert_length + skip_length - 1;
+        insert_length = 0;
       }
     }
     return Promise.all(ref_fragments).then((fragments) => {
@@ -200,41 +195,48 @@ class CramRecord {
       fragments.forEach((fragment) => {
         ref = ref.concat(fragment);
       });
+
+      var last_pos = 0;
       this.features_.forEach((feature) => {
         var fp = feature.get("FP");
         switch (feature.get("FC")) {
           case "I":
-            var a = ref.slice(0, fp - 1);
+            var a = ref.slice(last_pos, fp - 1);
             var b = ref.slice(fp - 1);
             var str = String.fromCharCode.apply(
               "",
               new Uint8Array(feature.get("IN"))
             );
             ref = a + str + b;
+            last_pos += fp + str.length;
             break;
 
           case "i":
-            var a = ref.slice(0, fp - 1);
+            var a = ref.slice(last_pos, fp - 1);
             var b = ref.slice(fp - 1);
             var str = String.fromCharCode.apply(
               "",
               new Uint8Array(feature.get("BA"))
             );
             ref = a + str + b;
+            last_pos += fp + 1;
             break;
 
           case "S":
-            var a = ref.slice(0, fp - 1);
+            var a = ref.slice(last_pos, fp - 1);
             var b = ref.slice(fp - 1);
             var str = String.fromCharCode.apply(
               "",
               new Uint8Array(feature.get("SC"))
             );
             ref = a + str + b;
+            last_pos += fp + str.length;
             break;
 
           case "X":
-            var base = ref.slice(fp - 1, fp).toUpperCase();
+            var base = ref
+              .slice(last_pos + fp - 1, last_pos + fp)
+              .toUpperCase();
             var index = "ACGTN".indexOf(base);
             var subst_matrix = new Uint8Array(feature.get("SM"));
             var subst_code = subst_matrix.slice(index, index + 1)[0];
@@ -249,6 +251,7 @@ class CramRecord {
             var a = ref.slice(0, fp - 1);
             var b = ref.slice(fp);
             ref = a + sub + b;
+            last_pos += fp;
             break;
 
           default:
