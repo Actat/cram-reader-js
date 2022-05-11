@@ -150,28 +150,38 @@ class CramRecord {
     var fragment_start_pos = this.position;
     var fragment_length = 0;
     var insert_length = 0;
-    for (var i = 0; i < this.features_.length + 1; i++) {
+    var last_pos = 0;
+    for (var i = 0; i < this.features_.length; i++) {
       var fc = "";
       if (i < this.features_.length) {
         fc = this.features_[i].get("FC");
         var fp = this.features_[i].get("FP");
+        last_pos += fp - 1;
         fragment_length += fp - 1;
+      }
+      if (fc == "X") {
+        fragment_length++;
+        last_pos++;
+        continue;
       }
       if (fc == "I") {
         var in_l = this.features_[i].get("IN").length;
         insert_length += in_l;
+        last_pos += in_l;
         continue;
       }
       if (fc == "i") {
         insert_length++;
+        last_pos++;
         continue;
       }
       if (fc == "S") {
         var sc_l = this.features_[i].get("SC").length;
         insert_length += sc_l;
+        last_pos += sc_l;
         continue;
       }
-      if (fc == "D" || fc == "N" || i == this.features_.length) {
+      if (fc == "D" || fc == "N") {
         if (fragment_length > 0) {
           ref_fragments.push(
             fasta.loadSequence(
@@ -192,6 +202,19 @@ class CramRecord {
         insert_length = 0;
       }
     }
+    if (fragment_length > 0 || last_pos < this.readLength) {
+      ref_fragments.push(
+        fasta.loadSequence(
+          this.refSeqName,
+          fragment_start_pos,
+          fragment_start_pos +
+            fragment_length +
+            (this.readLength - last_pos) -
+            1
+        )
+      );
+    }
+
     return Promise.all(ref_fragments).then((fragments) => {
       var ref = "";
       fragments.forEach((fragment) => {
@@ -203,8 +226,8 @@ class CramRecord {
         var fp = feature.get("FP");
         switch (feature.get("FC")) {
           case "I":
-            var a = ref.slice(last_pos, fp - 1);
-            var b = ref.slice(fp - 1);
+            var a = ref.slice(0, last_pos + fp);
+            var b = ref.slice(last_pos + fp);
             var str = String.fromCharCode.apply(
               "",
               new Uint8Array(feature.get("IN"))
@@ -214,8 +237,8 @@ class CramRecord {
             break;
 
           case "i":
-            var a = ref.slice(last_pos, fp - 1);
-            var b = ref.slice(fp - 1);
+            var a = ref.slice(0, last_pos + fp);
+            var b = ref.slice(last_pos + fp);
             var str = String.fromCharCode.apply(
               "",
               new Uint8Array(feature.get("BA"))
@@ -225,8 +248,8 @@ class CramRecord {
             break;
 
           case "S":
-            var a = ref.slice(last_pos, fp - 1);
-            var b = ref.slice(fp - 1);
+            var a = ref.slice(0, last_pos + fp);
+            var b = ref.slice(last_pos + fp);
             var str = String.fromCharCode.apply(
               "",
               new Uint8Array(feature.get("SC"))
@@ -250,8 +273,8 @@ class CramRecord {
                 sub = destination.charAt(i);
               }
             }
-            var a = ref.slice(0, fp - 1);
-            var b = ref.slice(fp);
+            var a = ref.slice(0, last_pos + fp - 1);
+            var b = ref.slice(last_pos + fp);
             ref = a + sub + b;
             last_pos += fp;
             break;
