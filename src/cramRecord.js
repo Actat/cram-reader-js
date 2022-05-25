@@ -195,8 +195,9 @@ class CramRecord {
         if (fc == "N") {
           skip_length = this.features_[i].get("RS");
         }
-        fragment_start_pos += fragment_length + insert_length + skip_length - 1;
+        fragment_start_pos += fragment_length + insert_length + skip_length;
         insert_length = 0;
+        fragment_length = 0;
       }
     }
     if (fragment_length > 0 || last_pos < this.readLength) {
