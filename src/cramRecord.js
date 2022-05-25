@@ -152,13 +152,10 @@ class CramRecord {
     var insert_length = 0;
     var last_pos = 0;
     for (var i = 0; i < this.features_.length; i++) {
-      var fc = "";
-      if (i < this.features_.length) {
-        fc = this.features_[i].get("FC");
-        var fp = this.features_[i].get("FP");
-        last_pos += fp - 1;
-        fragment_length += fp - 1;
-      }
+      var fc = this.features_[i].get("FC");
+      var fp = this.features_[i].get("FP");
+      last_pos += fp - 1;
+      fragment_length += fp - 1;
       if (fc == "X") {
         fragment_length++;
         last_pos++;
