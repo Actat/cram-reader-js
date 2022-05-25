@@ -224,8 +224,8 @@ class CramRecord {
         var fp = feature.get("FP");
         switch (feature.get("FC")) {
           case "I":
-            var a = ref.slice(0, last_pos + fp);
-            var b = ref.slice(last_pos + fp);
+            var a = ref.slice(0, last_pos + fp - 1);
+            var b = ref.slice(last_pos + fp - 1);
             var str = String.fromCharCode.apply(
               "",
               new Uint8Array(feature.get("IN"))
@@ -235,8 +235,8 @@ class CramRecord {
             break;
 
           case "i":
-            var a = ref.slice(0, last_pos + fp);
-            var b = ref.slice(last_pos + fp);
+            var a = ref.slice(0, last_pos + fp - 1);
+            var b = ref.slice(last_pos + fp - 1);
             var str = String.fromCharCode.apply(
               "",
               new Uint8Array(feature.get("BA"))
@@ -246,8 +246,8 @@ class CramRecord {
             break;
 
           case "S":
-            var a = ref.slice(0, last_pos + fp);
-            var b = ref.slice(last_pos + fp);
+            var a = ref.slice(0, last_pos + fp - 1);
+            var b = ref.slice(last_pos + fp - 1);
             var str = String.fromCharCode.apply(
               "",
               new Uint8Array(feature.get("SC"))
