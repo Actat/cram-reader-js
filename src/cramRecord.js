@@ -51,98 +51,84 @@ class CramRecord {
   restoreCigar() {
     if ("cigar" in this || !("readLength" in this)) {
       return;
-    } else if (this.features_.length == 0) {
-      this.cigar = String(this.readLength) + "M";
-      return;
-    } else {
-      var cigarLn = [];
-      var cigarOp = [""];
-      var lastOp = "";
-      var last_pos = 0;
-      var last_op_len = 0;
-      this.features_.forEach((feature) => {
-        var fp = feature.get("FP");
-        if (fp > 1) {
-          if (lastOp == "M") {
-            cigarLn[cigarLn.length - 1] += fp - 1;
-          } else {
-            cigarLn.push(fp - 1);
-            cigarOp.push("M");
-            lastOp = "M";
-          }
-        }
-        switch (feature.get("FC")) {
-          case "X":
-            last_op_len = 1;
-            lastOp = "M";
-            if (lastOp == "M") {
-              cigarLn[cigarLn.length - 1]++;
-            } else {
-              cigarLn.push(1);
-              cigarOp.push("M");
-            }
-            break;
-          case "S":
-            last_op_len = feature.get("SC").length;
-            lastOp = "S";
-            cigarLn.push(last_op_len);
-            cigarOp.push("S");
-            break;
-          case "i":
-            last_op_len = 1;
-            lastOp = "I";
-            cigarLn.push(1);
-            cigarOp.push("I");
-            break;
-          case "I":
-            last_op_len = feature.get("IN").length;
-            lastOp = "I";
-            cigarLn.push(feature.get("IN").length);
-            cigarOp.push("I");
-            break;
-          case "D":
-            last_op_len = 0;
-            lastOp = feature.get("FC");
-            cigarLn.push(feature.get("DL"));
-            cigarOp.push(feature.get("FC"));
-            break;
-          case "N":
-            last_op_len = 0;
-            lastOp = feature.get("FC");
-            cigarLn.push(feature.get("RS"));
-            cigarOp.push(feature.get("FC"));
-            break;
-          case "P":
-            last_op_len = 0;
-            lastOp = feature.get("FC");
-            cigarLn.push(feature.get("PD"));
-            cigarOp.push(feature.get("FC"));
-            break;
-          case "H":
-            last_op_len = 0;
-            lastOp = feature.get("FC");
-            cigarLn.push(feature.get("HC"));
-            cigarOp.push(feature.get("FC"));
-            break;
-        }
-        last_pos = last_pos + fp + last_op_len - 1;
-      });
-      if (last_pos < this.readLength) {
-        if (lastOp == "M") {
-          cigarLn[cigarLn.length - 1] += this.readLength - last_pos;
+    }
+    var cigar = "";
+    var cigarLn = [];
+    var cigarOp = [""];
+    var feature_pos_on_seq = 0;
+    var length_on_seq = 0;
+    this.features_.forEach((feature) => {
+      var fp = feature.get("FP");
+      var fc = feature.get("FC");
+      feature_pos_on_seq += fp;
+      if (fp > 1) {
+        var gap = feature_pos_on_seq - length_on_seq - 1;
+        if (cigarOp[cigarOp.length - 1] == "M") {
+          cigarLn[cigarLn.length - 1] += gap;
         } else {
-          cigarLn.push(this.readLength - last_pos);
+          cigarLn.push(gap);
           cigarOp.push("M");
         }
+        length_on_seq += gap;
       }
-
-      var cigar = "";
-      for (var i = 0; i < cigarLn.length; i++) {
-        cigar += String(cigarLn[i]) + cigarOp[i + 1];
+      switch (fc) {
+        case "X":
+          if (cigarOp[cigarOp.length - 1] == "M") {
+            cigarLn[cigarLn.length - 1]++;
+          } else {
+            cigarLn.push(1);
+            cigarOp.push("M");
+          }
+          length_on_seq++;
+          break;
+        case "S":
+          var len = feature.get("SC").length;
+          cigarLn.push(len);
+          cigarOp.push("S");
+          length_on_seq += len;
+          break;
+        case "i":
+          cigarLn.push(1);
+          cigarOp.push("I");
+          length_on_seq++;
+          break;
+        case "I":
+          var len = feature.get("IN").length;
+          cigarLn.push(len);
+          cigarOp.push("I");
+          length_on_seq += len;
+          break;
+        case "D":
+          cigarLn.push(feature.get("DL"));
+          cigarOp.push(feature.get("FC"));
+          break;
+        case "N":
+          cigarLn.push(feature.get("RS"));
+          cigarOp.push(feature.get("FC"));
+          break;
+        case "P":
+          cigarLn.push(feature.get("PD"));
+          cigarOp.push(feature.get("FC"));
+          break;
+        case "H":
+          cigarLn.push(feature.get("HC"));
+          cigarOp.push(feature.get("FC"));
+          break;
       }
-      this.cigar = cigar;
-      return;
+    });
+    if (length_on_seq < this.readLength) {
+      if (cigarOp[cigarOp.length - 1] == "M") {
+        cigarLn[cigarLn.length - 1] += this.readLength - length_on_seq;
+      } else {
+        cigarLn.push(this.readLength - length_on_seq);
+        cigarOp.push("M");
+      }
     }
+    for (var i = 0; i < cigarLn.length; i++) {
+      cigar += String(cigarLn[i]) + cigarOp[i + 1];
+    }
+    this.cigar = cigar;
+    return;
   }
 
   restoreSequence(fasta) {
