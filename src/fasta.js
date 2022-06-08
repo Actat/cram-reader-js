@@ -50,7 +50,7 @@ class Fasta {
   }
 
   loadSequence(chr, start, end, strand = "+") {
-    return this.loadSeq(chr, start, end).then((seq) => {
+    return this.loadSeq_(chr, start, end).then((seq) => {
       if (strand !== "-" && strand !== -1) {
         return seq;
       } else {
@@ -59,7 +59,7 @@ class Fasta {
     });
   }
 
-  async loadSeq(chr, start, end) {
+  async loadSeq_(chr, start, end) {
     if (!this.cache_) {
       return await this.loadFromSource_(chr, start, end);
     }
@@ -150,7 +150,7 @@ class Fasta {
       }
     }
     this.shrinkCache_(load_length);
-    return this.loadSeq(chr, start, end);
+    return this.loadSeq_(chr, start, end);
   }
 
   getBytePos_(pos, offset, linebases, linewidth) {

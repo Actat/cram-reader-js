@@ -57,6 +57,7 @@ class CramRecord {
     var cigarOp = [""];
     var feature_pos_on_seq = 0;
     var length_on_seq = 0;
+    var length_on_ref = 0;
     this.features_.forEach((feature) => {
       var fp = feature.get("FP");
       var fc = feature.get("FC");
@@ -70,6 +71,7 @@ class CramRecord {
           cigarOp.push("M");
         }
         length_on_seq += gap;
+        length_on_ref += gap;
       }
       switch (fc) {
         case "X":
@@ -80,6 +82,7 @@ class CramRecord {
             cigarOp.push("M");
           }
           length_on_seq++;
+          length_on_ref++;
           break;
         case "S":
           var len = feature.get("SC").length;
@@ -99,16 +102,22 @@ class CramRecord {
           length_on_seq += len;
           break;
         case "D":
-          cigarLn.push(feature.get("DL"));
+          var len = feature.get("DL");
+          cigarLn.push(len);
           cigarOp.push(feature.get("FC"));
+          length_on_ref += len;
           break;
         case "N":
-          cigarLn.push(feature.get("RS"));
+          var len = feature.get("RS");
+          cigarLn.push(len);
           cigarOp.push(feature.get("FC"));
+          length_on_ref += len;
           break;
         case "P":
-          cigarLn.push(feature.get("PD"));
+          var len = feature.get("PD");
+          cigarLn.push(len);
           cigarOp.push(feature.get("FC"));
+          length_on_ref += len;
           break;
         case "H":
           cigarLn.push(feature.get("HC"));
@@ -117,10 +126,13 @@ class CramRecord {
       }
     });
     if (length_on_seq < this.readLength) {
+      var len = this.readLength - length_on_seq;
+      length_on_seq += len;
+      length_on_ref += len;
       if (cigarOp[cigarOp.length - 1] == "M") {
-        cigarLn[cigarLn.length - 1] += this.readLength - length_on_seq;
+        cigarLn[cigarLn.length - 1] += len;
       } else {
-        cigarLn.push(this.readLength - length_on_seq);
+        cigarLn.push(len);
         cigarOp.push("M");
       }
     }
@@ -128,6 +140,10 @@ class CramRecord {
       cigar += String(cigarLn[i]) + cigarOp[i + 1];
     }
     this.cigar = cigar;
+    this.cigarLn = cigarLn;
+    this.cigarOp = cigarOp;
+    this.length_on_ref = length_on_ref;
+    this.positionEnd = this.position + length_on_ref - 1;
     return;
   }
 
