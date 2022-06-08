@@ -170,7 +170,7 @@ class Cram {
       if (
         read.refSeqId == id &&
         read.position <= end &&
-        read.position + read.readLength >= start
+        read.positionEnd >= start
       ) {
         filtered.push(read);
       }
