@@ -7,6 +7,7 @@ class Cram {
     this.cram_ = new FileHandler(cram, local_flag);
     this.crai_ = new FileHandler(crai, local_flag);
     this.index_ = undefined;
+    this.cache_ = new Map();
     if (fa && fai) {
       this.withFASTA_ = true;
       var fah = new FileHandler(fa, local_flag);
@@ -35,50 +36,35 @@ class Cram {
         .catch((e) => {
           reject(e);
         });
-      var record_lists = [];
-      var filtered_records = [];
-      Promise.all([this.index_, id])
-        .then((values) => {
-          var index = values[0];
-          var id = values[1];
-          var promises = [];
+      var p = Promise.all([this.index_, id]).then((values) => {
+        var index = values[0];
+        var id = values[1];
+        var promises = [];
 
-          // find slices which match with chr name, start and end
-          index.forEach((s) => {
-            if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
-              var records_have_pushed = this.loadAllRecordsInSlice_(s).then(
-                (records) => {
-                  var filtered = this.filterRecord_(id, start, end, records);
-                  record_lists.push(filtered);
-                }
-              );
-              promises.push(records_have_pushed);
+        // find slices which match with chr name, start and end
+        index.forEach((s) => {
+          if (s[0] == id && s[1] <= end && s[1] + s[2] >= start) {
+            var ind = index.indexOf(s);
+            if (!this.cache_.has(ind)) {
+              this.cache_.set(ind, this.getAllRecordsInSlice_(s, chr_list));
             }
-          });
-          return promises;
-        })
-        .then((promises) => {
+            promises.push(this.cache_.get(ind));
+          }
+        });
+        return promises;
+      });
+      Promise.all([id, p])
+        .then((values) => {
+          var id = values[0];
+          var promises = values[1];
           return Promise.all(promises)
-            .then(() => {
+            .then((record_lists) => {
               // concat all record lists
+              var records = [];
               record_lists.forEach((list) => {
-                filtered_records = filtered_records.concat(list);
+                records = records.concat(list);
               });
-              // decorate all records
-              var decorated_records = [];
-              filtered_records.forEach((record) => {
-                decorated_records.push(this.decorateRecords_(chr_list, record));
-              });
-              return decorated_records;
-            })
-            .catch((e) => {
-              reject(e);
-            });
-        })
-        .then((records) => {
-          Promise.all(records)
-            .then(() => {
-              resolve(filtered_records);
+              resolve(this.filterRecord_(id, start, end, records));
             })
             .catch((e) => {
               reject(e);
@@ -128,6 +114,25 @@ class Cram {
     });
   }
 
+  getAllRecordsInSlice_(slice_index, chr_list) {
+    var decorated_promises = [];
+    return this.loadAllRecordsInSlice_(slice_index)
+      .then((recs) => {
+        recs.forEach((rec) => {
+          decorated_promises.push(this.decorateRecords_(chr_list, rec));
+        });
+      })
+      .then(() => {
+        return Promise.all(decorated_promises).then((recs) => {
+          var record_list = [];
+          recs.forEach((rec) => {
+            record_list.push(rec);
+          });
+          return record_list;
+        });
+      });
+  }
+
   loadAllRecordsInSlice_(slice_index) {
     var container = this.loadContainer_(slice_index[3]);
     var arrbuf = container.then((container) => {
@@ -165,7 +170,7 @@ class Cram {
       if (
         read.refSeqId == id &&
         read.position <= end &&
-        read.position + read.readLength >= start
+        read.positionEnd >= start
       ) {
         filtered.push(read);
       }
@@ -180,5 +185,6 @@ class Cram {
       await record.restoreSequence(this.fasta_);
     }
     record.samString = record.toSAMString();
+    return record;
   }
 }
