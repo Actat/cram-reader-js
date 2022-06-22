@@ -194,20 +194,15 @@ class CramSlice {
   }
 
   async decodeTagData_(r) {
-    const tagLine = await this.readItem_("TL", "Int");
-    var header = await this.container_.loadCompressionHeaderBlock();
-    var tags = {};
-    const readTagFunc = (elm) => {
-      var name = elm.slice(0, 2);
+    var read_item = (elm) => {
       const tagType = elm.slice(-1);
       var values_encoding = header
         .get("content")
         .get("tv")
         .get(elm)
         .get("valuesEncoding");
-      var tag_value;
       if (tagType == "A") {
-        tag_value = this.decodeItem_(values_encoding, "Char");
+        return this.decodeItem_(values_encoding, "Char");
       } else if (
         tagType == "c" ||
         tagType == "C" ||
@@ -216,24 +211,31 @@ class CramSlice {
         tagType == "i" ||
         tagType == "I"
       ) {
-        tag_value = this.decodeItem_(values_encoding, "Int");
+        return this.decodeItem_(values_encoding, "Int");
       } else if (tagType == "f") {
-        tag_value = this.decodeItem_(values_encoding, "float32");
+        return this.decodeItem_(values_encoding, "float32");
       } else if (tagType == "Z") {
-        tag_value = this.decodeItem_(values_encoding, "String");
+        return this.decodeItem_(values_encoding, "String");
       } else if (tagType == "H") {
-        tag_value = this.decodeItem_(values_encoding, "Hstring");
+        return this.decodeItem_(values_encoding, "Hstring");
       } else if (tagType == "B") {
-        tag_value = this.decodeItem_(values_encoding, "ByteArray");
+        return this.decodeItem_(values_encoding, "ByteArray");
       } else {
         console.error("tagType'" + String(tagType) + "' is not supported.");
         return;
       }
-      tags[elm] = tag_value;
     };
-    for (var elm of header.get("content").get("pm").get("TD")[tagLine])
-      readTagFunc(elm);
-    r.tags = tags;
+
+    if (!r.tags) {
+      r.tags = {};
+    }
+    const tagLine = await this.readItem_("TL", "Int");
+    var header = await this.container_.loadCompressionHeaderBlock();
+    for (var elm of header.get("content").get("pm").get("TD")[tagLine]) {
+      var name = elm.slice(0, 2);
+      const tagType = elm.slice(-1);
+      r.tags[elm] = read_item(elm);
+    }
   }
 
   async decodeMappedRead_(r) {
